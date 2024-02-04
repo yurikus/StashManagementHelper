@@ -7,10 +7,9 @@ namespace StashManagementHelper;
 
 public static class SortingStrategy
 {
-    public static int GetIndexOfItemType(this Item i) => GroupingOrder.IndexOf(i.GetType());
-
     // This should be configurable
-    public static List<Type> GroupingOrder = [
+    public static List<Type> GroupingOrder { get; set; } =
+    [
         typeof(Item),
         typeof(Weapon),
         typeof(AmmoBox),
@@ -23,41 +22,47 @@ public static class SortingStrategy
 
     public static List<Item> Sort(this IEnumerable<Item> items)
     {
+        if (items == null)
+            throw new ArgumentNullException(nameof(items));
+
         return Settings.SortingStrategy.Value switch
         {
-            SortEnum.Size => items.SortBySize(),
             SortEnum.Default => items.SortByDefault(),
             SortEnum.Custom => items.SortByCustomOrder(),
-            _ => items.SortByDefault()
+            _ => throw new ArgumentOutOfRangeException()
         };
-    }
-
-    private static List<Item> SortBySize(this IEnumerable<Item> items)
-    {
-        return Settings.LargestItemsFirst.Value
-            ? items.OrderByDescending(x => x.CalculateCellSize().Length).ToList()
-            : items.OrderBy(x => x.CalculateCellSize().Length).ToList();
     }
 
     private static List<Item> SortByCustomOrder(this IEnumerable<Item> items)
     {
-        if (Settings.LargestItemsFirst.Value)
+        var sortFunctions = new List<(Func<Item, object> keySelector, bool enabled, bool descending)>
         {
-            return items
-                .OrderByDescending(x => x.IsContainer)
-                //.ThenBy(x => x.GetIndexOfItemType())
-                .ThenByDescending(y => y.CalculateCellSize().Length)
-                .ToList();
-        }
-        else
+            (GetContainerSize, Settings.ContainerSize.Value.HasFlag(SortOptions.Enabled), Settings.ContainerSize.Value.HasFlag(SortOptions.Descending)),
+            (GetIndexOfItemType, Settings.IndexOfItemType.Value.HasFlag(SortOptions.Enabled), Settings.IndexOfItemType.Value.HasFlag(SortOptions.Descending)),
+            (y => y.CalculateCellSize().Length, Settings.CellSize.Value.HasFlag(SortOptions.Enabled), Settings.CellSize.Value.HasFlag(SortOptions.Descending))
+        };
+
+        IOrderedEnumerable<Item> orderedItems = null;
+        var originalList = items.ToList();
+
+        foreach (var (keySelector, enabled, descending) in sortFunctions)
         {
-            return items
-                .OrderByDescending(x => x.IsContainer)
-                //.ThenBy(x => x.GetIndexOfItemType())
-                .ThenBy(y => y.CalculateCellSize().Length)
-                .ToList();
+            if (!enabled) continue;
+
+            orderedItems = orderedItems == null
+                ? (descending ? originalList.OrderByDescending(keySelector) : originalList.OrderBy(keySelector))
+                : (descending ? orderedItems.ThenByDescending(keySelector) : orderedItems.ThenBy(keySelector));
         }
+
+        return orderedItems?.ToList() ?? originalList;
     }
 
     private static List<Item> SortByDefault(this IEnumerable<Item> items) => items.ToList();
+
+    private static object GetIndexOfItemType(Item i) => GroupingOrder?.IndexOf(i.GetType()) ?? -1;
+
+    private static object GetContainerSize(Item item)
+    {
+        return item.Attributes.FirstOrDefault(y => y.Id.Equals(EItemAttributeId.ContainerSize))?.Base.Invoke() ?? -1;
+    }
 }

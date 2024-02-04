@@ -30,7 +30,7 @@ public class SortPatch : ModulePatch
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            Logger.LogError(e.Message);
         }
     }
 

@@ -9,56 +9,68 @@ namespace StashManagementHelper;
 public class FindFreeSpacePatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GClass2318), "FindFreeSpace");
-    
+
     [PatchPrefix]
     private static void PatchPrefix(GClass2318 __instance, List<bool> ___list_0, List<int> ___list_1, List<int> ___list_2)
     {
-        var skipRows = Math.Min(Math.Max(0, __instance.GridHeight.Value - Settings.SkipRows.Value), Settings.SkipRows.Value);
+        var gridHeight = __instance.GridHeight.Value;
+        var gridWidth = __instance.GridWidth.Value;
+        var skipRows = Math.Max(0, Math.Min(gridHeight - Settings.SkipRows.Value, Settings.SkipRows.Value));
 
         if (!Settings.Sorting || skipRows == 0 || __instance.ID != "hideout")
             return;
-
         try
         {
-            for (var index1 = 0; index1 < __instance.GridHeight.Value - skipRows; ++index1)
-            {
-                var num = __instance.CanStretchHorizontally ? -1 : 0;
-                for (var index2 = __instance.GridWidth.Value - 1; index2 >= 0; --index2)
-                {
-                    if (index1 < skipRows)
-                        ___list_1[index1 * __instance.GridWidth.Value + index2] = 0;
-                    else
-                    {
-                        if (___list_0[index1 * __instance.GridWidth.Value + index2])
-                            num = 0;
-                        else if (num != -1)
-                            ++num;
-                        ___list_1[index1 * __instance.GridWidth.Value + index2] = num;
-                    }
-                }
-            }
-
-            for (var index3 = 0; index3 < __instance.GridWidth.Value; ++index3)
-            {
-                var num = __instance.CanStretchVertically ? -1 : 0;
-                for (var index4 = __instance.GridHeight.Value - 1 - skipRows; index4 >= 0; --index4)
-                {
-                    if (index4 < skipRows)
-                        ___list_2[index4 * __instance.GridWidth.Value + index3] = 0;
-                    else
-                    {
-                        if (___list_0[index4 * __instance.GridWidth.Value + index3])
-                            num = 0;
-                        else if (num != -1)
-                            ++num;
-                        ___list_2[index4 * __instance.GridWidth.Value + index3] = num;
-                    }
-                }
-            }
+            CalculateHorizontalSpace(__instance, ___list_0, ___list_1, gridHeight, gridWidth, skipRows);
+            CalculateVerticalSpace(__instance, ___list_0, ___list_2, gridHeight, gridWidth, skipRows);
         }
         catch (Exception e)
         {
             Logger.LogError(e);
+        }
+    }
+
+    private static void CalculateHorizontalSpace(GClass2318 __instance, IReadOnlyList<bool> list_0, IList<int> list_1, int gridHeight, int gridWidth, int skipRows)
+    {
+        for (var row = 0; row < gridHeight - skipRows; ++row)
+        {
+            var num = __instance.CanStretchHorizontally ? -1 : 0;
+            for (var col = gridWidth - 1; col >= 0; --col)
+            {
+                var index = row * gridWidth + col;
+                if (row < skipRows)
+                    list_1[index] = 0;
+                else
+                {
+                    if (list_0[index])
+                        num = 0;
+                    else if (num != -1)
+                        ++num;
+                    list_1[index] = num;
+                }
+            }
+        }
+    }
+
+    private static void CalculateVerticalSpace(GClass2318 __instance, IReadOnlyList<bool> list_0, IList<int> list_2, int gridHeight, int gridWidth, int skipRows)
+    {
+        for (var col = 0; col < gridWidth; ++col)
+        {
+            var num = __instance.CanStretchVertically ? -1 : 0;
+            for (var row = gridHeight - 1 - skipRows; row >= 0; --row)
+            {
+                var index = row * gridWidth + col;
+                if (row < skipRows)
+                    list_2[index] = 0;
+                else
+                {
+                    if (list_0[index])
+                        num = 0;
+                    else if (num != -1)
+                        ++num;
+                    list_2[index] = num;
+                }
+            }
         }
     }
 }

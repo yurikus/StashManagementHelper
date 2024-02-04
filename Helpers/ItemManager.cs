@@ -15,11 +15,11 @@ public static class ItemManager
     /// <param name="sortingItem">The table of items</param>
     /// <param name="controller">The Inventory controller class.</param>
     /// <param name="simulate">?</param>
-    public static Task FoldSortingItems(LootItemClass sortingItem, InventoryControllerClass controller, bool simulate)
+    public static async Task FoldSortingItems(LootItemClass sortingItem, InventoryControllerClass controller, bool simulate)
     {
         try
         {
-            foreach (var sortingItemGrid in sortingItem.Grids)
+            foreach (var sortingItemGrid in sortingItem.Grids.OrderBy(x => x.GridHeight.Value * x.GridWidth.Value))
             {
                 foreach (var item in sortingItemGrid.Items)
                 {
@@ -27,7 +27,7 @@ public static class ItemManager
                     if (foldable is null || foldable.Folded) continue;
 
                     Logger.LogDebug($"Folding {item.Name.Localized()}");
-                    return controller.TryRunNetworkTransaction(GClass2585.Fold(foldable, true, controller.ID, simulate));
+                    await controller.TryRunNetworkTransaction(GClass2585.Fold(foldable, true, controller.ID, simulate));
                 }
             }
         }
@@ -35,8 +35,6 @@ public static class ItemManager
         {
             Logger.LogError(e);
         }
-
-        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -47,7 +45,7 @@ public static class ItemManager
     {
         try
         {
-            foreach (var sortingItemGrid in sortingItem.Grids)
+            foreach (var sortingItemGrid in sortingItem.Grids.OrderBy(x => x.GridHeight.Value * x.GridWidth.Value))
             {
                 foreach (var item in sortingItemGrid.Items.Where(x => x.StackObjectsCount < x.StackMaxSize).OrderByDescending(x => x.StackObjectsCount).ToList())
                 {
