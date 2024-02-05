@@ -7,29 +7,37 @@ namespace StashManagementHelper;
 
 public static class SortingStrategy
 {
-    // This should be configurable
+    // The order of these types should be configurable
     public static List<Type> GroupingOrder { get; set; } =
     [
-        typeof(Item),
         typeof(Weapon),
         typeof(AmmoBox),
         typeof(BulletClass),
         typeof(GrenadeClass),
         typeof(MagazineClass),
         typeof(MedsClass),
-        typeof(Mod)
+        typeof(Mod),
+        typeof(FoodClass),
+        typeof(KnifeClass),
+        typeof(ItemContainerClass),  // Secure container?
+        typeof(GClass2453),
+        typeof(GClass2537), // of MedClass
+        typeof(GClass2548), // money?
+        typeof(GClass2499),
+        typeof(GClass2498),
+        typeof(GClass2497),
+        typeof(GClass2448),
+        typeof(GClass2444),
+        typeof(GClass2500),
     ];
 
     public static List<Item> Sort(this IEnumerable<Item> items)
     {
-        if (items == null)
-            throw new ArgumentNullException(nameof(items));
-
         return Settings.SortingStrategy.Value switch
         {
-            SortEnum.Default => items.SortByDefault(),
+            SortEnum.Default => items.ToList(),
             SortEnum.Custom => items.SortByCustomOrder(),
-            _ => throw new ArgumentOutOfRangeException()
+            _ => items.ToList()
         };
     }
 
@@ -50,14 +58,12 @@ public static class SortingStrategy
             if (!enabled) continue;
 
             orderedItems = orderedItems == null
-                ? (descending ? originalList.OrderByDescending(keySelector) : originalList.OrderBy(keySelector))
-                : (descending ? orderedItems.ThenByDescending(keySelector) : orderedItems.ThenBy(keySelector));
+                ? descending ? originalList.OrderByDescending(keySelector) : originalList.OrderBy(keySelector)
+                : descending ? orderedItems.ThenByDescending(keySelector) : orderedItems.ThenBy(keySelector);
         }
 
         return orderedItems?.ToList() ?? originalList;
     }
-
-    private static List<Item> SortByDefault(this IEnumerable<Item> items) => items.ToList();
 
     private static object GetIndexOfItemType(Item i) => GroupingOrder?.IndexOf(i.GetType()) ?? -1;
 
