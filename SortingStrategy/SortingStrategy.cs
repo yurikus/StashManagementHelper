@@ -20,15 +20,17 @@ public static class SortingStrategy
         typeof(FoodClass),
         typeof(KnifeClass),
         typeof(ItemContainerClass),  // Secure container?
-        typeof(GClass2453),
-        typeof(GClass2537), // of MedClass
-        typeof(GClass2548), // money?
-        typeof(GClass2499),
-        typeof(GClass2498),
-        typeof(GClass2497),
-        typeof(GClass2448),
-        typeof(GClass2444),
-        typeof(GClass2500),
+        
+        //TODO:
+        //typeof(GClass2453),
+        //typeof(GClass2537), // of MedClass
+        //typeof(GClass2548), // money?
+        //typeof(GClass2499),
+        //typeof(GClass2498),
+        //typeof(GClass2497),
+        //typeof(GClass2448),
+        //typeof(GClass2444),
+        //typeof(GClass2500),
     ];
 
     public static List<Item> Sort(this IEnumerable<Item> items)

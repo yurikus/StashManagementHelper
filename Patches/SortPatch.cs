@@ -7,10 +7,10 @@ namespace StashManagementHelper;
 
 public class SortPatch : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GClass2585), "Sort");
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(InteractionsHandlerClass), "Sort");
 
     [PatchPrefix]
-    private static async void PatchPrefix(GStruct375<GClass2619> __result, LootItemClass sortingItem, InventoryControllerClass controller, bool simulate)
+    private static async void PatchPrefix(LootItemClass sortingItem, InventoryControllerClass controller, bool simulate)
     {
         try
         {

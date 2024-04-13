@@ -23,11 +23,10 @@ public static class ItemManager
             {
                 foreach (var item in sortingItemGrid.Items)
                 {
-                    if (!GClass2585.CanFold(item, out var foldable)) continue;
+                    if (!InteractionsHandlerClass.CanFold(item, out var foldable)) continue;
                     if (foldable is null || foldable.Folded) continue;
-
                     Logger.LogDebug($"Folding {item.Name.Localized()}");
-                    await controller.TryRunNetworkTransaction(GClass2585.Fold(foldable, true, controller.ID, simulate));
+                    await controller.TryRunNetworkTransaction(InteractionsHandlerClass.Fold(foldable, true, controller.ID, simulate));
                 }
             }
         }

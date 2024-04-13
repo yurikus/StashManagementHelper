@@ -8,7 +8,7 @@ namespace StashManagementHelper;
 
 public class ItemListSortPatch : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GClass2567), "Sort", [typeof(IEnumerable<Item>)]);
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GClass2756), "Sort", [typeof(IEnumerable<Item>)]);
 
     [PatchPostfix]
     private static void PatchPostfix(ref IEnumerable<Item> __result)

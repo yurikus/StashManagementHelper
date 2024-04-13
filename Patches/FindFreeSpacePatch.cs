@@ -9,15 +9,15 @@ namespace StashManagementHelper;
 
 public class FindFreeSpacePatch : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GClass2318), "FindFreeSpace");
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(StashGridClass), "FindFreeSpace");
 
-    public static GClass2318 Instance { get; set; }
+    public static StashGridClass Instance { get; set; }
     public static List<bool> List0 { get; set; }
     public static List<int> List1 { get; set; }
     public static List<int> List2 { get; set; }
 
     [PatchPrefix]
-    private static bool PatchPrefix(GClass2318 __instance, ref LocationInGrid __result, Item item, List<bool> ___list_0, List<int> ___list_1, List<int> ___list_2)
+    private static bool PatchPrefix(StashGridClass __instance, ref LocationInGrid __result, Item item, List<bool> ___list_0, List<int> ___list_1, List<int> ___list_2)
     {
         Instance = __instance;
         List0 = ___list_0;
@@ -142,7 +142,7 @@ public class FindFreeSpacePatch : ModulePatch
         }
     }
 
-    private static void CalculateHorizontalSpace(GClass2318 __instance, IReadOnlyList<bool> list_0, IList<int> list_1, int gridHeight, int gridWidth, int skipRows)
+    private static void CalculateHorizontalSpace(StashGridClass __instance, IReadOnlyList<bool> list_0, IList<int> list_1, int gridHeight, int gridWidth, int skipRows)
     {
         for (var row = 0; row < gridHeight - skipRows; ++row)
         {
@@ -164,7 +164,7 @@ public class FindFreeSpacePatch : ModulePatch
         }
     }
 
-    private static void CalculateVerticalSpace(GClass2318 __instance, IReadOnlyList<bool> list_0, IList<int> list_2, int gridHeight, int gridWidth, int skipRows)
+    private static void CalculateVerticalSpace(StashGridClass __instance, IReadOnlyList<bool> list_0, IList<int> list_2, int gridHeight, int gridWidth, int skipRows)
     {
         for (var col = 0; col < gridWidth; ++col)
         {
