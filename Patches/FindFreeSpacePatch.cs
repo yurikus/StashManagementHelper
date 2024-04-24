@@ -112,12 +112,14 @@ public class FindFreeSpacePatch : ModulePatch
         int skipRows,
         bool invertDimensions = false)
     {
-        var mainOffset = invertDimensions ? 0 : skipRows;
-        var secondaryOffset = invertDimensions ? skipRows : 0;
+        var mainStartIndex = Settings.FlipSortDirection.Value ? gridMainDimensionSize - skipRows - itemMainDimensionSize : skipRows;
 
-        for (var mainIndex = mainOffset; mainIndex < gridMainDimensionSize; ++mainIndex)
+        var mainEndIndex = Settings.FlipSortDirection.Value ? skipRows : gridMainDimensionSize - itemMainDimensionSize;
+        var step = Settings.FlipSortDirection.Value ? -1 : 1;
+
+        for (var mainIndex = mainStartIndex; Settings.FlipSortDirection.Value ? mainIndex >= mainEndIndex : mainIndex <= mainEndIndex; mainIndex += step)
         {
-            for (var secondaryIndex = secondaryOffset; secondaryIndex + itemSecondaryDimensionSize <= gridSecondaryDimensionSize; ++secondaryIndex)
+            for (var secondaryIndex = 0; secondaryIndex + itemSecondaryDimensionSize <= gridSecondaryDimensionSize; ++secondaryIndex)
             {
                 if (IsSpaceAvailable(mainIndex, secondaryIndex, itemMainDimensionSize, itemSecondaryDimensionSize, gridMainDimensionSize, gridSecondaryDimensionSize, mainDimensionSpaces, secondaryDimensionSpaces, invertDimensions))
                 {

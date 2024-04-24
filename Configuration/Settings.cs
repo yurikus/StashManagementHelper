@@ -14,7 +14,7 @@ public static class Settings
     public static ConfigEntry<bool> FoldItems { get; set; }
     public static ConfigEntry<bool> MergeItems { get; set; }
     public static ConfigEntry<bool> RotateItems { get; set; }
-    //public static ConfigEntry<bool> FlipSorting { get; set; }
+    public static ConfigEntry<bool> FlipSortDirection { get; set; }
     public static ConfigEntry<int> SkipRows { get; set; }
 
     public static ConfigEntry<SortOptions> ContainerSize { get; set; }
@@ -36,8 +36,8 @@ public static class Settings
         RotateItems = config.Bind(SortingSection, "Rotate items", true,
             new ConfigDescription("Rotate items for best fit.", null, new ConfigurationManagerAttributes { Order = 97 }));
 
-        //RotateItems = config.Bind(SortingSection, "Flip sorting", true,
-        //    new ConfigDescription("Start sorting from bottom up.", null, new ConfigurationManagerAttributes { Order = 96 }));
+        FlipSortDirection = config.Bind(SortingSection, "Flip sort direction", false,
+            new ConfigDescription("Start sorting from bottom up.", null, new ConfigurationManagerAttributes { Order = 96 }));
 
         SkipRows = config.Bind(SortingSection, "Skip rows", 0,
             new ConfigDescription("Skips the first # rows in stash.", new AcceptableValueRange<int>(0, 10), new ConfigurationManagerAttributes { Order = 95 }));
