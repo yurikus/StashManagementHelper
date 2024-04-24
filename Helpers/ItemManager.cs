@@ -10,48 +10,55 @@ public static class ItemManager
     public static ManualLogSource Logger { get; set; }
 
     /// <summary>
-    /// Folds every weapon in the list to take up less space
+    /// Folds every weapon in the list to take up less space.
     /// </summary>
-    /// <param name="sortingItem">The table of items</param>
-    /// <param name="controller">The Inventory controller class.</param>
-    /// <param name="simulate">?</param>
-    public static async Task FoldSortingItems(LootItemClass sortingItem, InventoryControllerClass controller, bool simulate)
+    /// <param name="items">The table of items.</param>
+    /// <param name="inventoryController">The Inventory controller class.</param>
+    /// <param name="simulate">Flag to simulate the operation without actual changes.</param>
+    public static async Task FoldItemsAsync(LootItemClass items, InventoryControllerClass inventoryController, bool simulate)
     {
+        if (items == null) throw new ArgumentNullException(nameof(items));
+        if (inventoryController == null) throw new ArgumentNullException(nameof(inventoryController));
+
         try
         {
-            foreach (var sortingItemGrid in sortingItem.Grids.OrderBy(x => x.GridHeight.Value * x.GridWidth.Value))
+            foreach (var grid in items.Grids.OrderBy(g => g.GridHeight.Value * g.GridWidth.Value))
             {
-                foreach (var item in sortingItemGrid.Items)
+                foreach (var item in grid.Items)
                 {
-                    if (!InteractionsHandlerClass.CanFold(item, out var foldable)) continue;
-                    if (foldable is null || foldable.Folded) continue;
+                    if (!InteractionsHandlerClass.CanFold(item, out var foldable) || foldable?.Folded == true) continue;
+
                     Logger.LogDebug($"Folding {item.Name.Localized()}");
-                    await controller.TryRunNetworkTransaction(InteractionsHandlerClass.Fold(foldable, true, controller.ID, simulate));
+                    await inventoryController.TryRunNetworkTransaction(InteractionsHandlerClass.Fold(foldable, true, inventoryController.ID, simulate));
                 }
             }
         }
         catch (Exception e)
         {
-            Logger.LogError(e);
+            Logger.LogError($"Error folding items: {e.Message}");
+            throw;
         }
     }
 
     /// <summary>
-    /// Merge separate stacks of the same item
+    /// Merge separate stacks of the same item.
     /// </summary>
-    /// <param name="sortingItem">The table of items</param>
-    public static void MergeSortingItems(LootItemClass sortingItem)
+    /// <param name="items">The table of items.</param>
+    public static void MergeItems(LootItemClass items)
     {
+        if (items == null) throw new ArgumentNullException(nameof(items));
+
         try
         {
-            foreach (var sortingItemGrid in sortingItem.Grids.OrderBy(x => x.GridHeight.Value * x.GridWidth.Value))
+            foreach (var grid in items.Grids.OrderBy(g => g.GridHeight.Value * g.GridWidth.Value))
             {
-                foreach (var item in sortingItemGrid.Items.Where(x => x.StackObjectsCount < x.StackMaxSize).OrderByDescending(x => x.StackObjectsCount).ToList())
+                var itemsToMerge = grid.Items.Where(i => i.StackObjectsCount < i.StackMaxSize).OrderByDescending(i => i.StackObjectsCount).ToList();
+                foreach (var item in itemsToMerge)
                 {
                     if (item.StackObjectsCount <= 0)
                     {
                         Logger.LogDebug($"Removing empty stack of {item.Name.Localized()}");
-                        sortingItemGrid.Remove(item);
+                        grid.Remove(item);
                         continue;
                     }
 
@@ -62,7 +69,8 @@ public static class ItemManager
         }
         catch (Exception e)
         {
-            Logger.LogError(e);
+            Logger.LogError($"Error merging items: {e.Message}");
+            throw;
         }
     }
 }

@@ -19,13 +19,13 @@ public class SortPatch : ModulePatch
             // Merge separate stacks of the same item
             if (Settings.MergeItems.Value)
             {
-                ItemManager.MergeSortingItems(sortingItem);
+                ItemManager.MergeItems(sortingItem);
             }
 
             // Fold weapons to take up less space
             if (Settings.FoldItems.Value)
             {
-                await ItemManager.FoldSortingItems(sortingItem, controller, simulate);
+                await ItemManager.FoldItemsAsync(sortingItem, controller, simulate);
             }
         }
         catch (Exception e)
