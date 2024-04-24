@@ -24,8 +24,7 @@ public class FindFreeSpacePatch : ModulePatch
         List1 = ___list_1;
         List2 = ___list_2;
 
-        var gridHeight = Instance.GridHeight.Value;
-        var skipRows = Math.Max(0, Math.Min(gridHeight - Settings.SkipRows.Value, Settings.SkipRows.Value));
+        var skipRows = Math.Max(0, Math.Min(Instance.GridHeight.Value - Settings.SkipRows.Value, Settings.SkipRows.Value));
         if (!Settings.Sorting || Instance.ID != "hideout")
         {
             skipRows = 0;
@@ -37,29 +36,20 @@ public class FindFreeSpacePatch : ModulePatch
             return false;
         }
 
-        var locationInGrid = (LocationInGrid)null;
-        var num = __instance.Contains(item) ? 1 : 0;
+        var itemExists = __instance.Contains(item);
+        var locationInGrid = itemExists ? __instance.ItemCollection[item] : null;
 
-        if (num != 0)
+        if (itemExists)
         {
-            locationInGrid = __instance.ItemCollection[item];
             __instance.ItemCollection.Remove(item, __instance);
             __instance.SetLayout(item, locationInGrid, false);
-            method_12();
+            UpdateGridSpaces();
         }
 
         var cellSize = item.CalculateCellSize();
-        var freeSpaceHorizontal = method_10(cellSize.X, cellSize.Y, ItemRotation.Horizontal, skipRows);
-        LocationInGrid freeSpaceVertical = null;
+        var freeSpace = DetermineBestPlacement(cellSize, skipRows);
 
-        if (Settings.RotateItems.Value || freeSpaceHorizontal is null)
-        {
-            freeSpaceVertical = method_10(cellSize.Y, cellSize.X, ItemRotation.Vertical, skipRows);
-        }
-
-        var freeSpace = freeSpaceHorizontal?.y <= freeSpaceVertical?.y ? freeSpaceHorizontal : freeSpaceVertical ?? freeSpaceHorizontal;
-
-        if (num == 0)
+        if (!itemExists)
         {
             __result = freeSpace;
             return false;
@@ -67,25 +57,48 @@ public class FindFreeSpacePatch : ModulePatch
 
         __instance.ItemCollection.Add(item, __instance, locationInGrid);
         __instance.SetLayout(item, locationInGrid, true);
-        method_12();
+        UpdateGridSpaces();
         __result = freeSpace;
         Logger.LogInfo($"{item.Name.Localized()} location: {__result}");
         return false;
     }
 
-    protected static LocationInGrid method_10(int itemWidth, int itemHeight, ItemRotation rotation, int skipRows)
+    private static LocationInGrid DetermineBestPlacement(GStruct24 cellSize, int skipRows)
     {
-        var locationInGrid = !Instance.CanStretchHorizontally || Instance.GridHeight.Value < Instance.GridWidth.Value + itemWidth ?
-            FindSuitableLocation(itemHeight, itemWidth, rotation, Instance.GridHeight.Value, Instance.GridWidth.Value, List2, List1, skipRows) :
-            FindSuitableLocation(itemWidth, itemHeight, rotation, Instance.GridWidth.Value, Instance.GridHeight.Value, List1, List2, skipRows, true);
+        var freeSpaceHorizontal = FindOptimalItemPlacement(cellSize.X, cellSize.Y, ItemRotation.Horizontal, skipRows);
+        var freeSpaceVertical = Settings.RotateItems.Value || freeSpaceHorizontal == null
+            ? FindOptimalItemPlacement(cellSize.Y, cellSize.X, ItemRotation.Vertical, skipRows)
+            : null;
 
+        return freeSpaceHorizontal != null && (freeSpaceVertical == null || freeSpaceHorizontal.y <= freeSpaceVertical.y)
+            ? freeSpaceHorizontal
+            : freeSpaceVertical;
+    }
+
+    protected static LocationInGrid FindOptimalItemPlacement(int itemWidth, int itemHeight, ItemRotation rotation, int skipRows)
+    {
+        // Determine the primary and secondary dimensions based on the ability to stretch horizontally
+        var useInvertedDimensions = Instance.CanStretchHorizontally && Instance.GridHeight.Value >= Instance.GridWidth.Value + itemWidth;
+        var primaryWidth = useInvertedDimensions ? itemWidth : itemHeight;
+        var primaryHeight = useInvertedDimensions ? itemHeight : itemWidth;
+        var primaryGridWidth = useInvertedDimensions ? Instance.GridWidth.Value : Instance.GridHeight.Value;
+        var primaryGridHeight = useInvertedDimensions ? Instance.GridHeight.Value : Instance.GridWidth.Value;
+        var primaryList = useInvertedDimensions ? List1 : List2;
+        var secondaryList = useInvertedDimensions ? List2 : List1;
+
+        // Attempt to find a suitable location with the current orientation
+        var locationInGrid = FindSuitableLocation(primaryWidth, primaryHeight, rotation, primaryGridWidth, primaryGridHeight, primaryList, secondaryList, skipRows, useInvertedDimensions);
         if (locationInGrid != null)
             return locationInGrid;
 
+        // Check if stretching is possible and return a new location accordingly
         if (Instance.CanStretchHorizontally && Instance.GridHeight.Value >= Instance.GridWidth.Value + itemWidth)
             return new LocationInGrid(Instance.GridWidth.Value, 0, rotation);
 
-        return Instance.CanStretchVertically && (Instance.CanStretchHorizontally || itemWidth <= Instance.GridWidth.Value) ? new LocationInGrid(0, Instance.GridHeight.Value, rotation) : (LocationInGrid)null;
+        if (Instance.CanStretchVertically && (Instance.CanStretchHorizontally || itemWidth <= Instance.GridWidth.Value))
+            return new LocationInGrid(0, Instance.GridHeight.Value, rotation);
+
+        return null;
     }
 
     private static LocationInGrid FindSuitableLocation(
@@ -99,38 +112,61 @@ public class FindFreeSpacePatch : ModulePatch
         int skipRows,
         bool invertDimensions = false)
     {
-        var mainOffset = invertDimensions ? 0 : 0 + skipRows;
-        var secondaryOffset = invertDimensions ? 0 + skipRows : 0;
+        var mainOffset = invertDimensions ? 0 : skipRows;
+        var secondaryOffset = invertDimensions ? skipRows : 0;
 
         for (var mainIndex = mainOffset; mainIndex < gridMainDimensionSize; ++mainIndex)
         {
-            for (var secondaryIndex = secondaryOffset; secondaryIndex < gridSecondaryDimensionSize && secondaryIndex + itemSecondaryDimensionSize <= gridSecondaryDimensionSize; ++secondaryIndex)
+            for (var secondaryIndex = secondaryOffset; secondaryIndex + itemSecondaryDimensionSize <= gridSecondaryDimensionSize; ++secondaryIndex)
             {
-                var availableSecondarySpace = invertDimensions ? secondaryDimensionSpaces[secondaryIndex * gridMainDimensionSize + mainIndex] : secondaryDimensionSpaces[mainIndex * gridSecondaryDimensionSize + secondaryIndex];
-                if (availableSecondarySpace >= itemSecondaryDimensionSize || availableSecondarySpace == -1)
+                if (IsSpaceAvailable(mainIndex, secondaryIndex, itemMainDimensionSize, itemSecondaryDimensionSize, gridMainDimensionSize, gridSecondaryDimensionSize, mainDimensionSpaces, secondaryDimensionSpaces, invertDimensions))
                 {
-                    var isSpaceSuitable = true;
-                    for (var index = secondaryIndex; isSpaceSuitable && index < secondaryIndex + itemSecondaryDimensionSize; ++index)
-                    {
-                        var availableMainSpace = invertDimensions ? mainDimensionSpaces[index * gridMainDimensionSize + mainIndex] : mainDimensionSpaces[mainIndex * gridSecondaryDimensionSize + index];
-                        isSpaceSuitable = availableMainSpace >= itemMainDimensionSize || availableMainSpace == -1;
-                    }
-                    if (isSpaceSuitable)
-                        return !invertDimensions ? new LocationInGrid(secondaryIndex, mainIndex, rotation) : new LocationInGrid(mainIndex, secondaryIndex, rotation);
+                    return new LocationInGrid(invertDimensions ? mainIndex : secondaryIndex, invertDimensions ? secondaryIndex : mainIndex, rotation);
                 }
             }
         }
         return null;
     }
 
-    protected static void method_12()
+    private static bool IsSpaceAvailable(
+        int mainIndex,
+        int secondaryIndex,
+        int itemMainDimensionSize,
+        int itemSecondaryDimensionSize,
+        int gridMainDimensionSize,
+        int gridSecondaryDimensionSize,
+        IReadOnlyList<int> mainDimensionSpaces,
+        IReadOnlyList<int> secondaryDimensionSpaces,
+        bool invertDimensions)
+    {
+        var availableSecondarySpace = invertDimensions ? secondaryDimensionSpaces[secondaryIndex * gridMainDimensionSize + mainIndex] : secondaryDimensionSpaces[mainIndex * gridSecondaryDimensionSize + secondaryIndex];
+        if (availableSecondarySpace < itemSecondaryDimensionSize && availableSecondarySpace != -1)
+        {
+            return false;
+        }
+
+        for (var index = secondaryIndex; index < secondaryIndex + itemSecondaryDimensionSize; ++index)
+        {
+            var availableMainSpace = invertDimensions ? mainDimensionSpaces[index * gridMainDimensionSize + mainIndex] : mainDimensionSpaces[mainIndex * gridSecondaryDimensionSize + index];
+            if (availableMainSpace < itemMainDimensionSize && availableMainSpace != -1)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected static void UpdateGridSpaces()
     {
         var gridHeight = Instance.GridHeight.Value;
         var gridWidth = Instance.GridWidth.Value;
         var skipRows = Math.Max(0, Math.Min(gridHeight - Settings.SkipRows.Value, Settings.SkipRows.Value));
 
         if (!Settings.Sorting || skipRows == 0 || Instance.ID != "hideout")
+        {
             return;
+        }
+
         try
         {
             CalculateHorizontalSpace(Instance, List0, List1, gridHeight, gridWidth, skipRows);
@@ -138,20 +174,25 @@ public class FindFreeSpacePatch : ModulePatch
         }
         catch (Exception e)
         {
-            Logger.LogError(e);
+            Logger.LogError($"Error updating grid spaces: {e}");
         }
     }
 
-    private static void CalculateHorizontalSpace(StashGridClass __instance, IReadOnlyList<bool> list_0, IList<int> list_1, int gridHeight, int gridWidth, int skipRows)
+    private static void CalculateSpace(StashGridClass __instance, IReadOnlyList<bool> list_0, IList<int> list_1, int gridHeight, int gridWidth, int skipRows, bool isHorizontal)
     {
-        for (var row = 0; row < gridHeight - skipRows; ++row)
+        var outerLimit = isHorizontal ? gridHeight : gridWidth;
+        var innerLimit = isHorizontal ? gridWidth : gridHeight;
+
+        for (var outer = 0; outer < outerLimit - skipRows; ++outer)
         {
-            var num = __instance.CanStretchHorizontally ? -1 : 0;
-            for (var col = gridWidth - 1; col >= 0; --col)
+            var num = (isHorizontal ? __instance.CanStretchHorizontally : __instance.CanStretchVertically) ? -1 : 0;
+            for (var inner = innerLimit - 1; inner >= 0; --inner)
             {
-                var index = row * gridWidth + col;
-                if (row < skipRows)
+                var index = isHorizontal ? outer * gridWidth + inner : inner * gridWidth + outer;
+                if (outer < skipRows)
+                {
                     list_1[index] = 0;
+                }
                 else
                 {
                     if (list_0[index])
@@ -164,25 +205,13 @@ public class FindFreeSpacePatch : ModulePatch
         }
     }
 
+    private static void CalculateHorizontalSpace(StashGridClass __instance, IReadOnlyList<bool> list_0, IList<int> list_1, int gridHeight, int gridWidth, int skipRows)
+    {
+        CalculateSpace(__instance, list_0, list_1, gridHeight, gridWidth, skipRows, true);
+    }
+
     private static void CalculateVerticalSpace(StashGridClass __instance, IReadOnlyList<bool> list_0, IList<int> list_2, int gridHeight, int gridWidth, int skipRows)
     {
-        for (var col = 0; col < gridWidth; ++col)
-        {
-            var num = __instance.CanStretchVertically ? -1 : 0;
-            for (var row = gridHeight - 1 - skipRows; row >= 0; --row)
-            {
-                var index = row * gridWidth + col;
-                if (row < skipRows)
-                    list_2[index] = 0;
-                else
-                {
-                    if (list_0[index])
-                        num = 0;
-                    else if (num != -1)
-                        ++num;
-                    list_2[index] = num;
-                }
-            }
-        }
+        CalculateSpace(__instance, list_0, list_2, gridHeight, gridWidth, skipRows, false);
     }
 }
