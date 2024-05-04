@@ -9,7 +9,7 @@ Features:
   -  Merge stacks of the same item.
   -  Rotate items for best fit.
   -  Skip a set amount of first rows to leave empty place to dump your items.
-  -  Flip sorting and start from bottom up (experimental)
+  -  Sort items starting from the bottom.
     
 ![image](https://github.com/Markosz22/StashManagementHelper/assets/41615461/8aad2256-378c-4fd0-9f13-340247cda926)
     
