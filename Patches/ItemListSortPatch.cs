@@ -1,4 +1,4 @@
-﻿using Aki.Reflection.Patching;
+﻿using SPT.Reflection.Patching;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ namespace StashManagementHelper;
 
 public class ItemListSortPatch : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GClass2756), "Sort", [typeof(IEnumerable<Item>)]);
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GClass3106), "Sort", [typeof(IEnumerable<Item>)]);
 
     [PatchPostfix]
     private static void PatchPostfix(ref IEnumerable<Item> __result)
