@@ -1,4 +1,5 @@
 ﻿using BepInEx.Logging;
+using EFT.InventoryLogic;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,21 +16,21 @@ public static class ItemManager
     /// <param name="items">The table of items.</param>
     /// <param name="inventoryController">The Inventory controller class.</param>
     /// <param name="simulate">Flag to simulate the operation without actual changes.</param>
-    public static async Task FoldItemsAsync(LootItemClass items, InventoryControllerClass inventoryController, bool simulate)
+    public static async Task FoldItemsAsync(CompoundItem items, InventoryController inventoryController, bool simulate)
     {
         if (items == null) throw new ArgumentNullException(nameof(items));
         if (inventoryController == null) throw new ArgumentNullException(nameof(inventoryController));
 
         try
         {
-            foreach (var grid in items.Grids.OrderBy(g => g.GridHeight.Value * g.GridWidth.Value))
+            foreach (var grid in items.Grids.OrderBy(g => g.GridHeight * g.GridWidth))
             {
                 foreach (var item in grid.Items)
                 {
                     if (!InteractionsHandlerClass.CanFold(item, out var foldable) || foldable?.Folded == true) continue;
 
                     Logger.LogDebug($"Folding {item.Name.Localized()}");
-                    await inventoryController.TryRunNetworkTransaction(InteractionsHandlerClass.Fold(foldable, true, inventoryController.ID, simulate));
+                    await inventoryController.TryRunNetworkTransaction(InteractionsHandlerClass.Fold(foldable, true, simulate));
                 }
             }
         }
@@ -44,13 +45,13 @@ public static class ItemManager
     /// Merge separate stacks of the same item.
     /// </summary>
     /// <param name="items">The table of items.</param>
-    public static void MergeItems(LootItemClass items)
+    public static void MergeItems(CompoundItem items)
     {
         if (items == null) throw new ArgumentNullException(nameof(items));
 
         try
         {
-            foreach (var grid in items.Grids.OrderBy(g => g.GridHeight.Value * g.GridWidth.Value))
+            foreach (var grid in items.Grids.OrderBy(g => g.GridHeight * g.GridWidth))
             {
                 var itemsToMerge = grid.Items.Where(i => i.StackObjectsCount < i.StackMaxSize).OrderByDescending(i => i.StackObjectsCount).ToList();
                 foreach (var item in itemsToMerge)
@@ -58,7 +59,7 @@ public static class ItemManager
                     if (item.StackObjectsCount <= 0)
                     {
                         Logger.LogDebug($"Removing empty stack of {item.Name.Localized()}");
-                        grid.Remove(item);
+                        grid.Remove(item, false);
                         continue;
                     }
 

@@ -1,4 +1,4 @@
-﻿using Aki.Common.Utils;
+﻿using SPT.Core.Utils;
 using BepInEx.Logging;
 using EFT.InventoryLogic;
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Newtonsoft.Json;
 
 namespace StashManagementHelper;
 
@@ -188,15 +189,14 @@ public static class SortingStrategy
                 {
                     { "sortOrder", SortOrder },
                     { "itemTypeOrder", ItemTypeOrder2.Select(itemType => itemType.ToString()).ToList() }
-
                 };
-                var defaultJson = Json.Serialize(defaultConfig);
+                var defaultJson = JsonConvert.SerializeObject(defaultConfig);
                 File.WriteAllText(configPath, defaultJson);
             }
             else
             {
                 var json = File.ReadAllText(configPath);
-                var config = Json.Deserialize<Dictionary<string, List<string>>>(json);
+                var config = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(json);
                 SortOrder = config["sortOrder"];
                 ItemTypeOrder2 = config["itemTypeOrder"].Select(itemType => (ItemTypes.ItemType)Enum.Parse(typeof(ItemTypes.ItemType), itemType)).ToList();
             }
