@@ -91,8 +91,8 @@ public class FindFreeSpacePatch : ModulePatch
             : null;
 
         // Compare placements based on settings and return the most suitable one
-        return freeSpaceHorizontal != null && (freeSpaceVertical == null || (Settings.FlipSortDirection.Value 
-            ? freeSpaceHorizontal.y >= freeSpaceVertical.y : freeSpaceHorizontal.y <= freeSpaceVertical.y)) 
+        return freeSpaceHorizontal != null && (freeSpaceVertical == null || (Settings.FlipSortDirection.Value
+            ? freeSpaceHorizontal.y >= freeSpaceVertical.y : freeSpaceHorizontal.y <= freeSpaceVertical.y))
             ? freeSpaceHorizontal : freeSpaceVertical;
     }
 
@@ -137,14 +137,18 @@ public class FindFreeSpacePatch : ModulePatch
         bool invertDimensions = false)
     {
         // Determine starting and ending indices for the main dimension based on sorting direction
-        var mainStartIndex = Settings.FlipSortDirection.Value ? gridMainDimensionSize - skipRows - itemMainDimensionSize : skipRows;
-        var mainEndIndex = Settings.FlipSortDirection.Value ? skipRows : gridMainDimensionSize - itemMainDimensionSize;
+        var mainStartIndex = Settings.FlipSortDirection.Value ? gridMainDimensionSize - itemMainDimensionSize - skipRows : skipRows;
+        var mainEndIndex = Settings.FlipSortDirection.Value ? 0 : gridMainDimensionSize - itemMainDimensionSize;
         var step = Settings.FlipSortDirection.Value ? -1 : 1;
 
         // Iterate over possible positions in the grid to find a suitable location for the item
         for (var mainIndex = mainStartIndex; Settings.FlipSortDirection.Value ? mainIndex >= mainEndIndex : mainIndex <= mainEndIndex; mainIndex += step)
         {
-            for (var secondaryIndex = 0; secondaryIndex + itemSecondaryDimensionSize <= gridSecondaryDimensionSize; ++secondaryIndex)
+            var secondaryStart = Settings.FlipSortDirection.Value ? gridSecondaryDimensionSize - itemSecondaryDimensionSize : 0;
+            var secondaryEnd = Settings.FlipSortDirection.Value ? 0 : gridSecondaryDimensionSize - itemSecondaryDimensionSize;
+            var secondaryStep = Settings.FlipSortDirection.Value ? -1 : 1;
+
+            for (var secondaryIndex = secondaryStart; Settings.FlipSortDirection.Value ? secondaryIndex >= secondaryEnd : secondaryIndex <= secondaryEnd; secondaryIndex += secondaryStep)
             {
                 // Check if the current position has enough space for the item
                 if (IsSpaceAvailable(mainIndex, secondaryIndex, itemMainDimensionSize, itemSecondaryDimensionSize, gridMainDimensionSize, gridSecondaryDimensionSize, mainDimensionSpaces, secondaryDimensionSpaces, invertDimensions))
