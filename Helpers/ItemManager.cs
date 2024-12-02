@@ -1,8 +1,8 @@
-﻿using BepInEx.Logging;
-using EFT.InventoryLogic;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using BepInEx.Logging;
+using EFT.InventoryLogic;
 
 namespace StashManagementHelper;
 
@@ -53,18 +53,41 @@ public static class ItemManager
         {
             foreach (var grid in items.Grids.OrderBy(g => g.GridHeight * g.GridWidth))
             {
-                var itemsToMerge = grid.Items.Where(i => i.StackObjectsCount < i.StackMaxSize).OrderByDescending(i => i.StackObjectsCount).ToList();
-                foreach (var item in itemsToMerge)
-                {
-                    if (item.StackObjectsCount <= 0)
-                    {
-                        Logger.LogDebug($"Removing empty stack of {item.Name.Localized()}");
-                        grid.Remove(item, false);
-                        continue;
-                    }
+                var stackableGroups = grid.Items
+                    .Where(i => i.StackObjectsCount < i.StackMaxSize)
+                    .GroupBy(i => i.TemplateId)
+                    .ToList();
 
-                    Logger.LogDebug($"Topping up {item.Name.Localized()} - {item.StackObjectsCount} of {item.StackMaxSize}");
-                    EFT.UI.ItemUiContext.Instance.TopUpItem(item);
+                foreach (var group in stackableGroups)
+                {
+                    var stackables = group.OrderByDescending(i => i.StackObjectsCount).ToList();
+
+                    for (int i = 0; i < stackables.Count - 1; i++)
+                    {
+                        var targetItem = stackables[i];
+                        if (targetItem.StackObjectsCount >= targetItem.StackMaxSize) continue;
+
+                        for (int j = stackables.Count - 1; j > i; j--)
+                        {
+                            var sourceItem = stackables[j];
+                            var spaceAvailable = targetItem.StackMaxSize - targetItem.StackObjectsCount;
+                            var amountToMove = Math.Min(spaceAvailable, sourceItem.StackObjectsCount);
+
+                            Logger.LogDebug($"Merging {sourceItem.Name.Localized()} ({amountToMove}) into {targetItem.Name.Localized()} ({spaceAvailable})");
+
+                            targetItem.StackObjectsCount += amountToMove;
+                            sourceItem.StackObjectsCount -= amountToMove;
+
+                            if (sourceItem.StackObjectsCount <= 0)
+                            {
+                                Logger.LogDebug($"Removing empty stack of {sourceItem.Name.Localized()}");
+                                grid.Remove(sourceItem, false);
+                                stackables.RemoveAt(j);
+                            }
+
+                            if (targetItem.StackObjectsCount >= targetItem.StackMaxSize) break;
+                        }
+                    }
                 }
             }
         }
