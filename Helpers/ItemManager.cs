@@ -47,15 +47,13 @@ public static class ItemManager
     /// <param name="items">The table of items.</param>
     public static void MergeItems(CompoundItem items)
     {
-        if (items == null) throw new ArgumentNullException(nameof(items));
-
         try
         {
             foreach (var grid in items.Grids.OrderBy(g => g.GridHeight * g.GridWidth))
             {
                 var stackableGroups = grid.Items
                     .Where(i => i.StackObjectsCount < i.StackMaxSize)
-                    .GroupBy(i => i.TemplateId)
+                    .GroupBy(i => new { i.TemplateId, i.SpawnedInSession })
                     .ToList();
 
                 foreach (var group in stackableGroups)
