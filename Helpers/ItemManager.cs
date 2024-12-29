@@ -63,15 +63,15 @@ public static class ItemManager
                     for (int i = 0; i < stackables.Count - 1; i++)
                     {
                         var targetItem = stackables[i];
-                        if (targetItem.StackObjectsCount >= targetItem.StackMaxSize) continue;
+                        if (targetItem.StackObjectsCount >= targetItem.StackMaxSize || targetItem.StackObjectsCount <= 0) continue;
 
-                        for (int j = stackables.Count - 1; j > i; j--)
+                        for (int j = i + 1; j < stackables.Count; j++)
                         {
                             var sourceItem = stackables[j];
-                            var spaceAvailable = targetItem.StackMaxSize - targetItem.StackObjectsCount;
-                            var amountToMove = Math.Min(spaceAvailable, sourceItem.StackObjectsCount);
-                            Logger.LogDebug($"Merging {sourceItem.Name.Localized()} ({amountToMove}) into {targetItem.Name.Localized()} ({spaceAvailable})");
-                            await inventoryController.TryRunNetworkTransaction(InteractionsHandlerClass.Merge(sourceItem, targetItem, inventoryController, simulate));
+                            if (sourceItem.StackObjectsCount <= 0) continue;
+
+                            Logger.LogDebug($"Merging {sourceItem.Name.Localized()} ({sourceItem.StackObjectsCount}, SpawnedInSession: {sourceItem.SpawnedInSession}) into {targetItem.Name.Localized()} ({targetItem.StackObjectsCount}, SpawnedInSession: {targetItem.SpawnedInSession})");
+                            await inventoryController.TryRunNetworkTransaction(InteractionsHandlerClass.TransferOrMerge(sourceItem, targetItem, inventoryController, simulate));
 
                             if (targetItem.StackObjectsCount >= targetItem.StackMaxSize) break;
                         }
