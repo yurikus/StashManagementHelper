@@ -49,33 +49,38 @@ public static class ItemManager
     {
         try
         {
-            foreach (var grid in items.Grids.OrderBy(g => g.GridHeight * g.GridWidth))
+            foreach (var grid in items.Grids)
             {
                 var stackableGroups = grid.Items
                     .Where(i => i.StackObjectsCount < i.StackMaxSize)
                     .GroupBy(i => new { i.TemplateId, i.SpawnedInSession })
+                    .Where(g => g.Count() > 1)
                     .ToList();
 
                 foreach (var group in stackableGroups)
                 {
-                    var stackables = group.OrderByDescending(i => i.StackObjectsCount).ToList();
-
-                    for (int i = 0; i < stackables.Count - 1; i++)
+                    bool mergesMade;
+                    do
                     {
-                        var targetItem = stackables[i];
-                        if (targetItem.StackObjectsCount >= targetItem.StackMaxSize) continue;
+                        mergesMade = false;
 
-                        for (int j = stackables.Count - 1; j > i; j--)
-                        {
-                            var sourceItem = stackables[j];
-                            var spaceAvailable = targetItem.StackMaxSize - targetItem.StackObjectsCount;
-                            var amountToMove = Math.Min(spaceAvailable, sourceItem.StackObjectsCount);
-                            Logger.LogDebug($"Merging {sourceItem.Name.Localized()} ({amountToMove}) into {targetItem.Name.Localized()} ({spaceAvailable})");
-                            await inventoryController.TryRunNetworkTransaction(InteractionsHandlerClass.Merge(sourceItem, targetItem, inventoryController, simulate));
+                        var stacks = group.OrderByDescending(i => i.StackObjectsCount)
+                            .Where(i => i.StackObjectsCount > 0)
+                            .ToList();
 
-                            if (targetItem.StackObjectsCount >= targetItem.StackMaxSize) break;
-                        }
-                    }
+                        if (stacks.Count <= 1) break;
+
+                        var targetStack = stacks.FirstOrDefault(s => s.StackObjectsCount < s.StackMaxSize);
+                        if (targetStack == null) break;
+
+                        var sourceStack = stacks.Last();
+                        if (sourceStack == targetStack) break;
+
+                        Logger.LogDebug($"Merging {sourceStack.Name.Localized()} ({sourceStack.StackObjectsCount}) into {targetStack.Name.Localized()} ({targetStack.StackObjectsCount})");
+                        await inventoryController.TryRunNetworkTransaction(InteractionsHandlerClass.TransferOrMerge(sourceStack, targetStack, inventoryController, simulate));
+
+                        mergesMade = true;
+                    } while (mergesMade);
                 }
             }
         }
