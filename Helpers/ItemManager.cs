@@ -45,7 +45,7 @@ public static class ItemManager
     /// Merge separate stacks of the same item.
     /// </summary>
     /// <param name="items">The table of items.</param>
-    public static void MergeItems(CompoundItem items)
+    public static async Task MergeItems(CompoundItem items, InventoryController inventoryController, bool simulate)
     {
         try
         {
@@ -70,18 +70,8 @@ public static class ItemManager
                             var sourceItem = stackables[j];
                             var spaceAvailable = targetItem.StackMaxSize - targetItem.StackObjectsCount;
                             var amountToMove = Math.Min(spaceAvailable, sourceItem.StackObjectsCount);
-
                             Logger.LogDebug($"Merging {sourceItem.Name.Localized()} ({amountToMove}) into {targetItem.Name.Localized()} ({spaceAvailable})");
-
-                            targetItem.StackObjectsCount += amountToMove;
-                            sourceItem.StackObjectsCount -= amountToMove;
-
-                            if (sourceItem.StackObjectsCount <= 0)
-                            {
-                                Logger.LogDebug($"Removing empty stack of {sourceItem.Name.Localized()}");
-                                grid.Remove(sourceItem, false);
-                                stackables.RemoveAt(j);
-                            }
+                            await inventoryController.TryRunNetworkTransaction(InteractionsHandlerClass.Merge(sourceItem, targetItem, inventoryController, simulate));
 
                             if (targetItem.StackObjectsCount >= targetItem.StackMaxSize) break;
                         }

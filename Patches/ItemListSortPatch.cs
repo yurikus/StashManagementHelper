@@ -1,8 +1,8 @@
-﻿using SPT.Reflection.Patching;
+﻿using System.Collections.Generic;
+using System.Reflection;
 using EFT.InventoryLogic;
 using HarmonyLib;
-using System.Collections.Generic;
-using System.Reflection;
+using SPT.Reflection.Patching;
 
 namespace StashManagementHelper;
 

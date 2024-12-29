@@ -1,8 +1,8 @@
-﻿using SPT.Reflection.Patching;
-using HarmonyLib;
-using System;
+﻿using System;
 using System.Reflection;
 using EFT.InventoryLogic;
+using HarmonyLib;
+using SPT.Reflection.Patching;
 
 namespace StashManagementHelper;
 
@@ -20,7 +20,7 @@ public class SortPatch : ModulePatch
             // Merge separate stacks of the same item
             if (Settings.MergeItems.Value)
             {
-                ItemManager.MergeItems(sortedItem);
+                await ItemManager.MergeItems(sortedItem, controller, simulate);
             }
 
             // Fold weapons to take up less space
