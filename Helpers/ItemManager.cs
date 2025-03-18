@@ -53,7 +53,7 @@ public static class ItemManager
             {
                 var stackableGroups = grid.Items
                     .Where(i => i.StackObjectsCount < i.StackMaxSize)
-                    .GroupBy(i => new { i.TemplateId, i.SpawnedInSession })
+                    .GroupBy(i => i.TemplateId)
                     .Where(g => g.Count() > 1)
                     .ToList();
 

@@ -18,7 +18,7 @@ A Single Player Tarkov (SPT) plugin that enhances stash management with advanced
 Configure sorting based on multiple criteria:
 - Container size
 - Item size
-- Item type (with customizable type ordering)
+- Item type (with customizable type ordering - Not working too great, work in progress)
 
 ![image](https://github.com/Markosz22/StashManagementHelper/assets/41615461/521ecce7-ceda-45cc-8ab2-7539cb11b550)
 
