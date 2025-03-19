@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using EFT.InventoryLogic;
 using HarmonyLib;
@@ -13,6 +14,26 @@ public class ItemListSortPatch : ModulePatch
     [PatchPostfix]
     private static void PatchPostfix(ref IEnumerable<Item> __result)
     {
+        if (!Settings.SortTraders.Value)
+        {
+            try
+            {
+                var item = __result.FirstOrDefault();
+                foreach (var parentItem in item.GetAllParentItems())
+                {
+                    if (parentItem.TemplateId == "566abbc34bdc2d92178b4576")
+                    {
+                        return;
+                    }
+                    Logger.LogInfo($"Parent: {parentItem.Template._id}, {parentItem.Template._name}, {parentItem.Template._type}");
+                }
+            }
+            catch
+            {
+                // Ignore
+            }
+        }
+
         __result = __result.Sort();
     }
 }

@@ -16,6 +16,8 @@ public static class Settings
     public static ConfigEntry<bool> MergeItems { get; set; }
     public static ConfigEntry<bool> RotateItems { get; set; }
     public static ConfigEntry<bool> FlipSortDirection { get; set; }
+    public static ConfigEntry<bool> SortTraders { get; set; }
+    public static ConfigEntry<bool> SortOtherContainers { get; set; }
     public static ConfigEntry<int> SkipRows { get; set; }
 
     public static ConfigEntry<SortOptions> ContainerSize { get; set; }
@@ -28,20 +30,26 @@ public static class Settings
         SortingStrategy = config.Bind(SortingSection, "Sorting strategy", SortEnum.Custom,
             new ConfigDescription("Changes how items are ordered during sorting.", null, new ConfigurationManagerAttributes { Order = 100 }));
 
+        SortTraders = config.Bind(SortingSection, "Sort traders", false,
+            new ConfigDescription("Apply sorting strategy to trader window.", null, new ConfigurationManagerAttributes { Order = 99 }));
+
+        SortOtherContainers = config.Bind(SortingSection, "Sort other containers", false,
+            new ConfigDescription("Apply sorting strategy to containers other than Stash.", null, new ConfigurationManagerAttributes { Order = 98 }));
+
         FoldItems = config.Bind(SortingSection, "Fold items", true,
-            new ConfigDescription("Fold items to save space.", null, new ConfigurationManagerAttributes { Order = 99 }));
+            new ConfigDescription("Fold items to save space.", null, new ConfigurationManagerAttributes { Order = 97 }));
 
         MergeItems = config.Bind(SortingSection, "Merge items", true,
-            new ConfigDescription("Merge stacking items to save space.", null, new ConfigurationManagerAttributes { Order = 98 }));
+            new ConfigDescription("Merge stacking items to save space.", null, new ConfigurationManagerAttributes { Order = 96 }));
 
         RotateItems = config.Bind(SortingSection, "Rotate items", true,
-            new ConfigDescription("Rotate items for best fit.", null, new ConfigurationManagerAttributes { Order = 97 }));
+            new ConfigDescription("Rotate items for best fit.", null, new ConfigurationManagerAttributes { Order = 95 }));
 
         FlipSortDirection = config.Bind(SortingSection, "Flip sort direction", false,
-            new ConfigDescription("Start sorting from bottom up.", null, new ConfigurationManagerAttributes { Order = 96 }));
+            new ConfigDescription("Start sorting from bottom up.", null, new ConfigurationManagerAttributes { Order = 94 }));
 
         SkipRows = config.Bind(SortingSection, "Skip rows", 0,
-            new ConfigDescription("Skips the first # rows in stash.", new AcceptableValueRange<int>(0, 10), new ConfigurationManagerAttributes { Order = 95 }));
+            new ConfigDescription("Skips the first # rows in stash.", new AcceptableValueRange<int>(0, 10), new ConfigurationManagerAttributes { Order = 93 }));
 
         // Sorting strategy
         ContainerSize = config.Bind(SortingStrategySection, "Sort by container size", SortOptions.Enabled | SortOptions.Descending,
