@@ -21,8 +21,8 @@ public static class Settings
     public static ConfigEntry<int> SkipRows { get; set; }
 
     public static ConfigEntry<SortOptions> ContainerSize { get; set; }
-    public static ConfigEntry<SortOptions> ItemType { get; set; }
     public static ConfigEntry<SortOptions> CellSize { get; set; }
+    public static ConfigEntry<SortOptions> ItemType { get; set; }
 
     public static void BindSettings(ConfigFile config)
     {
@@ -55,11 +55,11 @@ public static class Settings
         ContainerSize = config.Bind(SortingStrategySection, "Sort by container size", SortOptions.Enabled | SortOptions.Descending,
             new ConfigDescription("Sort by container size", null, new ConfigurationManagerAttributes { Order = 50 }));
 
-        ItemType = config.Bind(SortingStrategySection, "Sort by item type", SortOptions.None,
-            new ConfigDescription("Sort by item type", null, new ConfigurationManagerAttributes { Order = 49 }));
-
         CellSize = config.Bind(SortingStrategySection, "Sort by item size", SortOptions.Enabled | SortOptions.Descending,
-            new ConfigDescription("Sort by item size", null, new ConfigurationManagerAttributes { Order = 48 }));
+            new ConfigDescription("Sort by item size", null, new ConfigurationManagerAttributes { Order = 49 }));
+
+        ItemType = config.Bind(SortingStrategySection, "Sort by item type", SortOptions.None,
+            new ConfigDescription("Sort by item type", null, new ConfigurationManagerAttributes { Order = 48 }));
     }
 
     public static SortOptions GetSortOption(string typeName)
@@ -67,8 +67,8 @@ public static class Settings
         return typeName switch
         {
             "ContainerSize" => ContainerSize.Value,
-            "ItemType" => ItemType.Value,
             "CellSize" => CellSize.Value,
+            "ItemType" => ItemType.Value,
             _ => throw new ArgumentException("Invalid sort type")
         };
     }
