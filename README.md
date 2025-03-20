@@ -11,8 +11,8 @@ A Single Player Tarkov (SPT) plugin that enhances stash management with advanced
 - Smart item rotation for optimal fit
 - Configurable empty rows at the top for item dumping
 - Bottom-up sorting option
-
-![image](https://github.com/Markosz22/StashManagementHelper/assets/41615461/8aad2256-378c-4fd0-9f13-340247cda926)
+  
+![{1D31F86E-3274-4D1D-B9E6-FB12E472A80E}](https://github.com/user-attachments/assets/f2339a85-65ef-4e22-9bdc-6d01b43a2270)
 
 ### Sorting Strategies
 Configure sorting based on multiple criteria:
