@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using EFT.InventoryLogic;
 using HarmonyLib;
@@ -13,9 +14,23 @@ public class ItemListSortPatch : ModulePatch
     [PatchPostfix]
     private static void PatchPostfix(ref IEnumerable<Item> __result)
     {
-        __result = __result.Sort();
+        var shouldSort = Settings.Sorting;
+
+        // Check if we should apply sorting for traders
+        if (!shouldSort && Settings.SortTraders.Value)
+        {
+            var firstItem = __result.FirstOrDefault();
+            shouldSort = firstItem != null && ItemManager.IsItemInTrader(firstItem);
+        }
+
+        if (shouldSort)
+        {
+            __result = __result.Sort();
+        }
     }
 }
+
+// For finding GClass
 
 //public class ItemListSortPatch : ModulePatch
 //{

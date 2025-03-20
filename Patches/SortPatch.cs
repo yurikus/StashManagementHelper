@@ -15,6 +15,12 @@ public class SortPatch : ModulePatch
     {
         try
         {
+            if (!Settings.SortOtherContainers.Value && !ItemManager.IsItemInStash(sortedItem))
+            {
+                ItemManager.Logger.LogDebug($"Skipping custom sorting in {sortedItem.Template._name} - not in hideout stash container");
+                return;
+            }
+
             Settings.Sorting = true;
 
             // Merge separate stacks of the same item
@@ -31,7 +37,7 @@ public class SortPatch : ModulePatch
         }
         catch (Exception e)
         {
-            Logger.LogError(e.Message);
+            ItemManager.Logger.LogError(e.Message);
         }
     }
 
