@@ -75,7 +75,7 @@ public class FindFreeSpacePatch : ModulePatch
         UpdateGridSpaces();
 
         __result = freeSpace;
-        Logger.LogInfo($"{item.Name.Localized()} location: {__result}");
+        ItemManager.Logger.LogInfo($"{item.Name.Localized()} location: {__result}");
         return false;
     }
 
@@ -216,7 +216,7 @@ public class FindFreeSpacePatch : ModulePatch
         }
         catch (Exception e)
         {
-            Logger.LogError($"Error updating grid spaces: {e}");
+            ItemManager.Logger.LogError($"Error updating grid spaces: {e}");
         }
     }
 

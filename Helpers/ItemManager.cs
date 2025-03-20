@@ -8,6 +8,9 @@ namespace StashManagementHelper;
 
 public static class ItemManager
 {
+    private const string StashItemId = "hideout";
+    private const string StashTemplateId = "566abbc34bdc2d92178b4576";
+
     public static ManualLogSource Logger { get; set; }
 
     /// <summary>
@@ -89,5 +92,43 @@ public static class ItemManager
             Logger.LogError($"Error merging items: {e.Message}");
             throw;
         }
+    }
+
+    /// <summary>
+    /// Checks if an item is located in the player's stash
+    /// </summary>
+    /// <param name="item">The item to check</param>
+    /// <returns>True if the item is in the player stash, false otherwise</returns>
+    public static bool IsItemInStash(Item item)
+    {
+        if (item == null) return false;
+        if (item is StashItemClass) return true;
+        if (item.TemplateId == StashTemplateId) return true;
+        if (item.Owner?.ID == StashItemId) return true;
+
+        try
+        {
+            foreach (var parentItem in item.GetAllParentItems())
+            {
+                if (parentItem.TemplateId == StashTemplateId || parentItem is StashItemClass) return true;
+                if (parentItem.Owner?.ID == StashItemId) return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error checking stash parents: {ex.Message}");
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if item is in trader window
+    /// </summary>
+    /// <param name="item"></param>
+    public static bool IsItemInTrader(Item item)
+    {
+        if (item?.Owner == null) return false;
+        return item.Owner.OwnerType == EOwnerType.Trader;
     }
 }

@@ -14,29 +14,23 @@ public class ItemListSortPatch : ModulePatch
     [PatchPostfix]
     private static void PatchPostfix(ref IEnumerable<Item> __result)
     {
-        if (!Settings.SortTraders.Value)
+        var shouldSort = Settings.Sorting;
+
+        // Check if we should apply sorting for traders
+        if (!shouldSort && Settings.SortTraders.Value)
         {
-            try
-            {
-                var item = __result.FirstOrDefault();
-                foreach (var parentItem in item.GetAllParentItems())
-                {
-                    if (parentItem.TemplateId == "566abbc34bdc2d92178b4576")
-                    {
-                        return;
-                    }
-                    Logger.LogInfo($"Parent: {parentItem.Template._id}, {parentItem.Template._name}, {parentItem.Template._type}");
-                }
-            }
-            catch
-            {
-                // Ignore
-            }
+            var firstItem = __result.FirstOrDefault();
+            shouldSort = firstItem != null && ItemManager.IsItemInTrader(firstItem);
         }
 
-        __result = __result.Sort();
+        if (shouldSort)
+        {
+            __result = __result.Sort();
+        }
     }
 }
+
+// For finding GClass
 
 //public class ItemListSortPatch : ModulePatch
 //{
