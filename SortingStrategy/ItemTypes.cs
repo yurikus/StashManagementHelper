@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using EFT.InventoryLogic;
 
 namespace StashManagementHelper;
@@ -9,18 +10,22 @@ public static class ItemTypes
     public enum ItemType
     {
         Weapons,
+        Armor,
         Magazines,
         Ammo,
         Meds,
-        FoodAndDrink,
+        Food,
+        Drink,
         Melee,
         Mods,
         Grenades,
         Barter,
         Rigs,
-        Goggles,
+        Eyewear,
         Containers,
-        Equipment,
+        Headgear,
+        Facecovers,
+        Headsets,
         Keys,
         RepairKits,
         SpecialEquipment,
@@ -28,29 +33,49 @@ public static class ItemTypes
         Money,
         Backpacks,
         Info,
+        HeadgearArmor,
+        Unknown
     }
 
-    public static readonly Dictionary<ItemType, Func<Item, bool>> ItemTypeMap = new()
+    // Optimized type checking with refined order based on likely inheritance
+    public static ItemType GetItemTypeEnum(Item item) => item switch
     {
-        {ItemType.Weapons, item => item is Weapon},
-        {ItemType.Magazines, item => item is MagazineItemClass},
-        {ItemType.Ammo, item => item is AmmoItemClass or AmmoBox},
-        {ItemType.Meds, item => item is MedsItemClass},
-        {ItemType.FoodAndDrink, item => item is FoodItemClass},
-        {ItemType.Melee, item => item is KnifeItemClass},
-        {ItemType.Mods, item => item is Mod},
-        {ItemType.Grenades, item => item is ThrowWeapItemClass},
-        {ItemType.Barter, item => item is BarterItemItemClass},
-        {ItemType.Rigs, item => item is VestItemClass},
-        {ItemType.Goggles, item => item is VisorsItemClass},
-        {ItemType.Equipment, item => item is ArmorItemClass},
-        {ItemType.Keys, item => item is KeyItemClass},
-        {ItemType.Containers, item => item is SearchableItemItemClass },
-        {ItemType.Backpacks, item => item is BackpackItemClass },
-        {ItemType.RepairKits, item => item is RepairKitsItemClass},
-        {ItemType.SpecialEquipment, item => item is SpecialScopeItemClass or SpecialWeaponItemClass},
-        {ItemType.BallisticPlates, item => item is ArmorPlateItemClass},
-        {ItemType.Money, item => item is MoneyItemClass},
-        {ItemType.Info, item => item is InfoItemClass},
+        // Most specific subtypes first
+        ArmoredEquipmentItemClass => ItemType.HeadgearArmor,
+        BackpackItemClass => ItemType.Backpacks,
+        VestItemClass => ItemType.Rigs,
+        SpecialScopeItemClass => ItemType.SpecialEquipment,
+        SpecialWeaponItemClass => ItemType.SpecialEquipment,
+        VisorsItemClass => ItemType.Eyewear,
+        HeadwearItemClass => ItemType.Headgear,
+        FaceCoverItemClass => ItemType.Facecovers,
+        HeadphonesItemClass => ItemType.Headsets,
+        MagazineItemClass => ItemType.Magazines,
+        AmmoBox => ItemType.Ammo,
+        MedsItemClass => ItemType.Meds,
+        FoodItemClass => ItemType.Food,
+        DrinkItemClass => ItemType.Drink,
+        KnifeItemClass => ItemType.Melee,
+        ThrowWeapItemClass => ItemType.Grenades,
+        KeyItemClass => ItemType.Keys,
+        RepairKitsItemClass => ItemType.RepairKits,
+        ArmorPlateItemClass => ItemType.BallisticPlates,
+        MoneyItemClass => ItemType.Money,
+        InfoItemClass => ItemType.Info,
+        BarterItemItemClass => ItemType.Barter,
+
+        // More general types later
+        Weapon => ItemType.Weapons,
+        ArmorItemClass => ItemType.Armor,
+        Mod => ItemType.Mods,
+        AmmoItemClass => ItemType.Ammo,
+        SimpleContainerItemClass => ItemType.Containers,
+
+        _ => ItemType.Unknown
     };
+
+    public static readonly List<ItemType> AllItemTypes = Enum.GetValues(typeof(ItemType))
+                                                            .Cast<ItemType>()
+                                                            .Where(it => it != ItemType.Unknown)
+                                                            .ToList();
 }
