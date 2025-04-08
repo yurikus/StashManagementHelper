@@ -27,12 +27,14 @@ public static class ItemTypes
         Headsets,
         Keys,
         RepairKits,
+        NightAndThermalVision,
         SpecialEquipment,
         BallisticPlates,
         Money,
         Backpacks,
         Info,
         HeadgearArmor,
+        Armband
     }
 
     public static readonly Dictionary<ItemType, Func<Item, bool>> ItemTypeMap = new()
@@ -57,10 +59,15 @@ public static class ItemTypes
         {ItemType.Containers, item => item is SimpleContainerItemClass },
         {ItemType.Backpacks, item => item is BackpackItemClass },
         {ItemType.RepairKits, item => item is RepairKitsItemClass},
-        {ItemType.SpecialEquipment, item => item is SpecialScopeItemClass or SpecialWeaponItemClass},
+        {ItemType.SpecialEquipment, item => item is SpecItemItemClass},
+        {ItemType.NightAndThermalVision, item => item is SpecialScopeItemClass or SpecialWeaponItemClass},
         {ItemType.BallisticPlates, item => item is ArmorPlateItemClass},
         {ItemType.Money, item => item is MoneyItemClass},
         {ItemType.Info, item => item is InfoItemClass},
         {ItemType.HeadgearArmor, item => item is ArmoredEquipmentItemClass},
+        {ItemType.Armband, item => item is ArmBandItemClass},
     };
 }
+
+
+// TODO: Check TemplateIdToObjectMappingsClass

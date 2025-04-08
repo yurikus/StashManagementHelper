@@ -27,6 +27,7 @@ public static class SortingStrategy
         ItemTypes.ItemType.HeadgearArmor,
         ItemTypes.ItemType.Facecovers,
         ItemTypes.ItemType.Rigs,
+        ItemTypes.ItemType.NightAndThermalVision,
         ItemTypes.ItemType.Eyewear,
         ItemTypes.ItemType.Melee,
         ItemTypes.ItemType.Meds,
@@ -34,9 +35,8 @@ public static class SortingStrategy
         ItemTypes.ItemType.Drink,
         ItemTypes.ItemType.Mods,
         ItemTypes.ItemType.RepairKits,
-        ItemTypes.ItemType.BallisticPlates,
-        ItemTypes.ItemType.Barter,
         ItemTypes.ItemType.SpecialEquipment,
+        ItemTypes.ItemType.Barter,
         ItemTypes.ItemType.Keys,
         ItemTypes.ItemType.Money,
         ItemTypes.ItemType.Armor,
@@ -44,6 +44,8 @@ public static class SortingStrategy
         ItemTypes.ItemType.Backpacks,
         ItemTypes.ItemType.Headsets,
         ItemTypes.ItemType.Containers,
+        ItemTypes.ItemType.BallisticPlates,
+        ItemTypes.ItemType.Armband
     ];
 
     static SortingStrategy()
@@ -98,6 +100,8 @@ public static class SortingStrategy
 
     private static object GetItemType(Item item)
     {
+        ItemManager.Logger.LogInfo($"DEBUG : item type: {item.GetType().Name}");
+
         var itemType = ItemTypes.ItemTypeMap.FirstOrDefault(entry => entry.Value(item)).Key;
         var index = ItemTypeOrder.IndexOf(itemType);
 
