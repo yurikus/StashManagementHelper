@@ -100,8 +100,6 @@ public static class SortingStrategy
 
     private static object GetItemType(Item item)
     {
-        ItemManager.Logger.LogInfo($"DEBUG : item type: {item.GetType().Name}");
-
         var itemType = ItemTypes.ItemTypeMap.FirstOrDefault(entry => entry.Value(item)).Key;
         var index = ItemTypeOrder.IndexOf(itemType);
 
