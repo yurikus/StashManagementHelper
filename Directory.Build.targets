@@ -1,0 +1,24 @@
+<Project>
+
+  <Target Name="GenerateBuildInfo" BeforeTargets="BeforeCompile">
+    <WriteLinesToFile
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true"
+      File="BuildInfo.cs"
+      Lines="public static class BuildInfo {  public const string ModVersion = &quot;$(Version)&quot;%3B  }" />
+  </Target>
+
+  <Target Name="CopyBuildOutputToSptDir" AfterTargets="Build">
+    <PropertyGroup>
+      <ClientModPath>$(SPTRefDir)/BepInEx/plugins/yurikus/</ClientModPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Artifacts Include="$(OutDir)$(TargetName).dll" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(Artifacts)" DestinationFolder="$(ClientModPath)" OverwriteReadOnlyFiles="true" />
+
+    <Message Text="$(TargetName) -&gt; $(ClientModPath)" Importance="high" />
+  </Target>
+</Project>

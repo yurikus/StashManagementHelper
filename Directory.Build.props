@@ -1,0 +1,38 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetName>yurikus.$(MSBuildProjectName)</TargetName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <EFTBuild>40087</EFTBuild>
+    <EFTVer>EFT-v0.16.9.0.40087</EFTVer>
+    <SPTVer>SPT-4.0.1</SPTVer>
+    <SPTRefDir>/GM/Tarkov/SPT/$(SPTVer)</SPTRefDir>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyInformationalVersionAttribute">
+      <_Parameter1>$(SPTVer)</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyCopyright">
+      <_Parameter1>$(EFTVer)</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputPath>$([MSBuild]::NormalizeDirectory($(MSBuildThisFileDirectory)/build/$(MSBuildProjectName)/$(Configuration)Bin))</OutputPath>
+    <BaseIntermediateOutputPath>$([MSBuild]::NormalizeDirectory($(MSBuildThisFileDirectory)/build/$(MSBuildProjectName)/$(Configuration)Obj))</BaseIntermediateOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- CS8602: Dereference of a possibly null reference. -->
+    <NoWarn>CS8602;$(NoWarn)</NoWarn>
+
+    <!-- IDE0051: Remove unused private members. -->
+    <NoWarn>IDE0051;$(NoWarn)</NoWarn>
+  </PropertyGroup>
+  
+</Project>

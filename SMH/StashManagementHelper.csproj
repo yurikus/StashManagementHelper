@@ -1,0 +1,179 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Version>$(EFTBuild).2.1</Version>
+    <TargetFramework>netstandard21</TargetFramework>
+    <OutputType>Library</OutputType>
+    <Deterministic>true</Deterministic>
+    <LangVersion>latest</LangVersion>
+    <Description>Stash Management Helper</Description>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>embedded</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DebugType>embedded</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AssemblySearchPaths>
+      $(SPTRefDir)/BepInEx/core;
+      $(SPTRefDir)/BepInEx/plugins/spt;
+      $(SPTRefDir)/BepInEx/plugins/spt/ConfigurationManager;
+      $(SPTRefDir)/EscapeFromTarkov_Data/Managed;
+      $(AssemblySearchPaths);
+    </AssemblySearchPaths>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="0Harmony" />
+    <Reference Include="BepInEx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="ConfigurationManager" />
+    <Reference Include="spt-common" />
+    <Reference Include="spt-core" />
+    <Reference Include="spt-custom" />
+    <Reference Include="spt-debugging" />
+    <Reference Include="spt-reflection" />
+    <Reference Include="spt-singleplayer" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="AmplifyMotion" />
+    <Reference Include="AnimationSystem.Recording" />
+    <Reference Include="AnimationSystem.Types" />
+    <Reference Include="Assembly-CSharp" />
+    <Reference Include="Assembly-CSharp-firstpass" />
+    <Reference Include="Autodesk.Fbx" />
+    <Reference Include="bsg.componentace.compression.libs.zlib" />
+    <Reference Include="bsg.console.core" />
+    <Reference Include="bsg.microsoft.extensions.objectpool" />
+    <Reference Include="bsg.system.buffers" />
+    <Reference Include="BSG.Unity.Wires" />
+    <Reference Include="Cinemachine" />
+    <Reference Include="Coffee.SoftMaskForUGUI" />
+    <Reference Include="com.nvidia.reflex.Runtime" />
+    <Reference Include="Comfort" />
+    <Reference Include="Comfort.Unity" />
+    <Reference Include="CommonExtensions" />
+    <Reference Include="DissonanceVoip" />
+    <Reference Include="DOTween" />
+    <Reference Include="DOTween.Modules" />
+    <Reference Include="FbxBuildTestAssets" />
+    <Reference Include="FilesChecker" />
+    <Reference Include="ItemComponent.Types" />
+    <Reference Include="ItemTemplate.Types" />
+    <Reference Include="JBooth.MicroSplat.Core" />
+    <Reference Include="kcp" />
+    <Reference Include="LibraryLoaderUtility" />
+    <Reference Include="Meta.XR.Audio" />
+    <Reference Include="Mono.Data.Sqlite" />
+    <Reference Include="Mono.Posix" />
+    <Reference Include="Mono.Security" />
+    <Reference Include="Mono.WebBrowser" />
+    <Reference Include="Newtonsoft.Json" />
+    <Reference Include="Newtonsoft.Json.UnityConverters" />
+    <Reference Include="NLog" />
+    <Reference Include="Novell.Directory.Ldap" />
+    <Reference Include="Sirenix.OdinInspector.Attributes" />
+    <Reference Include="Sirenix.Serialization" />
+    <Reference Include="Sirenix.Serialization.Config" />
+    <Reference Include="Sirenix.Utilities" />
+    <Reference Include="uLipSync.Runtime" />
+    <Reference Include="Unity.Burst" />
+    <Reference Include="Unity.Burst.Unsafe" />
+    <Reference Include="Unity.Formats.Fbx.Runtime" />
+    <Reference Include="Unity.Mathematics" />
+    <Reference Include="Unity.MemoryProfiler" />
+    <Reference Include="Unity.PlayableGraphVisualizer" />
+    <Reference Include="Unity.Postprocessing.Runtime" />
+    <Reference Include="Unity.ProBuilder" />
+    <Reference Include="Unity.ProBuilder.Csg" />
+    <Reference Include="Unity.ProBuilder.KdTree" />
+    <Reference Include="Unity.ProBuilder.Poly2Tri" />
+    <Reference Include="Unity.ProBuilder.Stl" />
+    <Reference Include="Unity.Recorder" />
+    <Reference Include="Unity.Recorder.Base" />
+    <Reference Include="Unity.ScriptableBuildPipeline" />
+    <Reference Include="Unity.TextMeshPro" />
+    <Reference Include="Unity.Timeline" />
+    <Reference Include="UnityEngine" />
+    <Reference Include="UnityEngine.AccessibilityModule" />
+    <Reference Include="UnityEngine.AIModule" />
+    <Reference Include="UnityEngine.AndroidJNIModule" />
+    <Reference Include="UnityEngine.AnimationModule" />
+    <Reference Include="UnityEngine.ARModule" />
+    <Reference Include="UnityEngine.AssetBundleModule" />
+    <Reference Include="UnityEngine.AudioModule" />
+    <Reference Include="UnityEngine.ClothModule" />
+    <Reference Include="UnityEngine.ClusterInputModule" />
+    <Reference Include="UnityEngine.ClusterRendererModule" />
+    <Reference Include="UnityEngine.CoreModule" />
+    <Reference Include="UnityEngine.CrashReportingModule" />
+    <Reference Include="UnityEngine.DirectorModule" />
+    <Reference Include="UnityEngine.DSPGraphModule" />
+    <Reference Include="UnityEngine.GameCenterModule" />
+    <Reference Include="UnityEngine.GridModule" />
+    <Reference Include="UnityEngine.HotReloadModule" />
+    <Reference Include="UnityEngine.ImageConversionModule" />
+    <Reference Include="UnityEngine.IMGUIModule" />
+    <Reference Include="UnityEngine.InputLegacyModule" />
+    <Reference Include="UnityEngine.InputModule" />
+    <Reference Include="UnityEngine.JSONSerializeModule" />
+    <Reference Include="UnityEngine.LocalizationModule" />
+    <Reference Include="UnityEngine.ParticleSystemModule" />
+    <Reference Include="UnityEngine.PerformanceReportingModule" />
+    <Reference Include="UnityEngine.Physics2DModule" />
+    <Reference Include="UnityEngine.PhysicsModule" />
+    <Reference Include="UnityEngine.ProfilerModule" />
+    <Reference Include="UnityEngine.ScreenCaptureModule" />
+    <Reference Include="UnityEngine.SharedInternalsModule" />
+    <Reference Include="UnityEngine.SpriteMaskModule" />
+    <Reference Include="UnityEngine.SpriteShapeModule" />
+    <Reference Include="UnityEngine.StreamingModule" />
+    <Reference Include="UnityEngine.SubstanceModule" />
+    <Reference Include="UnityEngine.SubsystemsModule" />
+    <Reference Include="UnityEngine.TerrainModule" />
+    <Reference Include="UnityEngine.TerrainPhysicsModule" />
+    <Reference Include="UnityEngine.TextRenderingModule" />
+    <Reference Include="UnityEngine.TilemapModule" />
+    <Reference Include="UnityEngine.TLSModule" />
+    <Reference Include="UnityEngine.UI" />
+    <Reference Include="UnityEngine.UIElementsModule" />
+    <Reference Include="UnityEngine.UIModule" />
+    <Reference Include="UnityEngine.UmbraModule" />
+    <Reference Include="UnityEngine.UnityAnalyticsModule" />
+    <Reference Include="UnityEngine.UnityConnectModule" />
+    <Reference Include="UnityEngine.UnityTestProtocolModule" />
+    <Reference Include="UnityEngine.UnityWebRequestAssetBundleModule" />
+    <Reference Include="UnityEngine.UnityWebRequestAudioModule" />
+    <Reference Include="UnityEngine.UnityWebRequestModule" />
+    <Reference Include="UnityEngine.UnityWebRequestTextureModule" />
+    <Reference Include="UnityEngine.UnityWebRequestWWWModule" />
+    <Reference Include="UnityEngine.VehiclesModule" />
+    <Reference Include="UnityEngine.VFXModule" />
+    <Reference Include="UnityEngine.VideoModule" />
+    <Reference Include="UnityEngine.VRModule" />
+    <Reference Include="UnityEngine.WindModule" />
+    <Reference Include="UnityEngine.XRModule" />
+    <Reference Include="websocket-sharp" />
+    <Reference Include="where-allocations" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Prevent copying of references to output -->
+    <Reference Update="@(Reference)">
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

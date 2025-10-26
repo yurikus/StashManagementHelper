@@ -10,15 +10,15 @@ namespace StashManagementHelper;
 
 public static class SortingStrategy
 {
-    private static bool inSynch = false;
-    private static DateTime lastConfigFileWriteTime = DateTime.MinValue;
+    static bool inSync = false;
+    static DateTime lastConfigFileWriteTime = DateTime.MinValue;
 
-    private static readonly string configPath;
+    static readonly string configPath;
 
-    private static List<string> SortOrder { get; set; } = ["ContainerSize", "CellSize", "ItemType"];
-
-    private static List<ItemTypes.ItemType> ItemTypeOrder { get; set; } =
+    static List<ItemTypes.ItemType> ItemTypeOrder { get; set; } =
     [
+        ItemTypes.ItemType.Money,
+        ItemTypes.ItemType.Keys,
         ItemTypes.ItemType.Ammo,
         ItemTypes.ItemType.Grenades,
         ItemTypes.ItemType.Magazines,
@@ -37,8 +37,6 @@ public static class SortingStrategy
         ItemTypes.ItemType.RepairKits,
         ItemTypes.ItemType.SpecialEquipment,
         ItemTypes.ItemType.Barter,
-        ItemTypes.ItemType.Keys,
-        ItemTypes.ItemType.Money,
         ItemTypes.ItemType.Armor,
         ItemTypes.ItemType.Info,
         ItemTypes.ItemType.Backpacks,
@@ -51,78 +49,40 @@ public static class SortingStrategy
     static SortingStrategy()
     {
         var dllPath = Assembly.GetExecutingAssembly().Location;
-        configPath = Path.Combine(Path.GetDirectoryName(dllPath) ?? string.Empty, "customSortConfig.json");
+        configPath = Path.Combine(Path.GetDirectoryName(dllPath) ?? string.Empty, "SMH.CustomSortConfig.json");
     }
 
     public static List<Item> Sort(this IEnumerable<Item> items)
-        => Settings.SortingStrategy.Value switch
-        {
-            SortEnum.Default => items.ToList(),
-            SortEnum.Custom => items.SortByCustomOrder(),
-            _ => items.ToList()
-        };
-
-    private static List<Item> SortByCustomOrder(this IEnumerable<Item> items)
     {
         LoadSortOrder();
-        var sortFunctions = SortOrder
-            .Select(type => (
-                GetSortFunction(type),
-                Settings.GetSortOption(type).HasFlag(SortOptions.Enabled),
-                Settings.GetSortOption(type).HasFlag(SortOptions.Descending)
-            ))
-            .Where(sf => sf.Item2)
-            .Reverse()
-            .ToList();
 
         var orderedItems = items;
 
-        foreach (var (keySelector, _, descending) in sortFunctions)
-        {
-            orderedItems = descending
-                ? orderedItems.OrderByDescending(keySelector)
-                : orderedItems.OrderBy(keySelector);
-        }
+        orderedItems = Settings.GetSortOption().HasFlag(SortOptions.Descending)
+            ? orderedItems.OrderByDescending(GetItemType)
+            : orderedItems.OrderBy(GetItemType);
 
         return orderedItems.ToList();
     }
 
-    private static Func<Item, object> GetSortFunction(string sortType)
-    {
-        return sortType switch
-        {
-            "ContainerSize" => GetContainerSize,
-            "ItemType" => GetItemType,
-            "CellSize" => item => item.CalculateCellSize().Length,
-            _ => throw new ArgumentException("Invalid sort type")
-        };
-    }
-
-    private static object GetItemType(Item item)
+    static object GetItemType(Item item)
     {
         var itemType = ItemTypes.ItemTypeMap.FirstOrDefault(entry => entry.Value(item)).Key;
         var index = ItemTypeOrder.IndexOf(itemType);
 
         if (index == -1)
         {
-            ItemManager.Logger.LogInfo($"Unknown item type: {item.GetType().Name}");
+            ItemManager.Log.LogInfo($"Unknown item type: {item.GetType().Name}");
             return ItemTypeOrder.Count + 100;
         }
 
         return index;
     }
 
-    private static object GetContainerSize(Item item)
+    static void SyncItemTypeOrder()
     {
-        return item.Attributes.FirstOrDefault(y => y.Id.Equals(EItemAttributeId.ContainerSize))?.Base.Invoke() ?? -1;
-    }
-
-    private static void SyncItemTypeOrder()
-    {
-        if (inSynch)
-        {
+        if (inSync)
             return;
-        }
 
         var mapItemTypes = ItemTypes.ItemTypeMap.Keys.ToList();
         var missingTypes = mapItemTypes.Except(ItemTypeOrder).ToList();
@@ -130,23 +90,23 @@ public static class SortingStrategy
 
         if (missingTypes.Any())
         {
-            ItemManager.Logger.LogInfo($"Found {missingTypes.Count} item types in map but not in order: {string.Join(", ", missingTypes)}");
+            ItemManager.Log.LogInfo($"Found {missingTypes.Count} item types in map but not in order: {string.Join(", ", missingTypes)}");
 
             foreach (var missingType in missingTypes)
             {
-                int enumValue = (int)missingType;
+                int enumValue = (int) missingType;
 
                 bool inserted = false;
                 for (int i = 0; i < ItemTypeOrder.Count - 1; i++)
                 {
-                    int currentEnumValue = (int)ItemTypeOrder[i];
-                    int nextEnumValue = (int)ItemTypeOrder[i + 1];
+                    int currentEnumValue = (int) ItemTypeOrder[i];
+                    int nextEnumValue = (int) ItemTypeOrder[i + 1];
 
                     if (enumValue > currentEnumValue && enumValue < nextEnumValue)
                     {
                         ItemTypeOrder.Insert(i + 1, missingType);
                         inserted = true;
-                        ItemManager.Logger.LogInfo($"Inserted {missingType} after {ItemTypeOrder[i]}");
+                        ItemManager.Log.LogInfo($"Inserted {missingType} after {ItemTypeOrder[i]}");
                         break;
                     }
                 }
@@ -154,20 +114,20 @@ public static class SortingStrategy
                 if (!inserted)
                 {
                     ItemTypeOrder.Add(missingType);
-                    ItemManager.Logger.LogInfo($"Added {missingType} to the end of order list");
+                    ItemManager.Log.LogInfo($"Added {missingType} to the end of order list");
                 }
             }
         }
 
         if (extraTypes.Any())
         {
-            ItemManager.Logger.LogInfo($"Found {extraTypes.Count} item types in order but not in map: {string.Join(", ", extraTypes)}");
+            ItemManager.Log.LogInfo($"Found {extraTypes.Count} item types in order but not in map: {string.Join(", ", extraTypes)}");
         }
 
-        inSynch = true;
+        inSync = true;
     }
 
-    private static void LoadSortOrder()
+    static void LoadSortOrder()
     {
         try
         {
@@ -177,30 +137,23 @@ public static class SortingStrategy
 
                 var defaultConfig = new Dictionary<string, List<string>>
                 {
-                    { "sortOrder", SortOrder },
                     { "itemTypeOrder", ItemTypeOrder.Select(itemType => itemType.ToString()).ToList() }
                 };
+
                 var defaultJson = JsonConvert.SerializeObject(defaultConfig, Formatting.Indented);
                 File.WriteAllText(configPath, defaultJson);
                 lastConfigFileWriteTime = File.GetLastWriteTimeUtc(configPath);
             }
             else
             {
+
                 var currentWriteTime = File.GetLastWriteTimeUtc(configPath);
                 if (currentWriteTime > lastConfigFileWriteTime)
                 {
-                    ItemManager.Logger.LogInfo($"Config file '{configPath}' has changed. Reloading.");
+
+                    ItemManager.Log.LogInfo($"Config file '{configPath}' has changed. Reloading.");
                     var json = File.ReadAllText(configPath);
                     var config = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(json);
-
-                    if (config.TryGetValue("sortOrder", out var loadedSortOrder))
-                    {
-                        SortOrder = loadedSortOrder ?? SortOrder;
-                    }
-                    else
-                    {
-                        ItemManager.Logger.LogWarning("Config file missing 'sortOrder' key. Using default.");
-                    }
 
                     if (config.TryGetValue("itemTypeOrder", out var loadedItemTypeOrderStrings))
                     {
@@ -215,22 +168,22 @@ public static class SortingStrategy
                                 }
                                 else
                                 {
-                                    ItemManager.Logger.LogWarning($"Skipping invalid item type in config: {typeStr}");
+                                    ItemManager.Log.LogWarning($"Skipping invalid item type in config: {typeStr}");
                                 }
                             }
                             ItemTypeOrder = newItemTypeOrder;
                         }
                         else
                         {
-                            ItemManager.Logger.LogWarning("Config file contains null 'itemTypeOrder'. Using previous or default.");
+                            ItemManager.Log.LogWarning("Config file contains null 'itemTypeOrder'. Using previous or default.");
                         }
                     }
                     else
                     {
-                        ItemManager.Logger.LogWarning("Config file missing 'itemTypeOrder' key. Using previous or default.");
+                        ItemManager.Log.LogWarning("Config file missing 'itemTypeOrder' key. Using previous or default.");
                     }
 
-                    inSynch = false;
+                    inSync = false;
                     SyncItemTypeOrder();
 
                     lastConfigFileWriteTime = currentWriteTime;
@@ -243,8 +196,8 @@ public static class SortingStrategy
         }
         catch (Exception e)
         {
-            ItemManager.Logger.LogError($"Error loading sort configuration: {e.Message}");
-            inSynch = false;
+            ItemManager.Log.LogError($"Error loading sort configuration: {e.Message}");
+            inSync = false;
             SyncItemTypeOrder();
         }
     }
