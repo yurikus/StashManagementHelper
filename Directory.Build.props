@@ -7,7 +7,7 @@
   <PropertyGroup>
     <EFTBuild>40087</EFTBuild>
     <EFTVer>EFT-v0.16.9.0.40087</EFTVer>
-    <SPTVer>SPT-4.0.1</SPTVer>
+    <SPTVer>SPT-4.0.2</SPTVer>
     <SPTRefDir>/GM/Tarkov/SPT/$(SPTVer)</SPTRefDir>
     <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
