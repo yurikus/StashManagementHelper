@@ -27,19 +27,19 @@ public static class Settings
                     null,
                     new ConfigurationManagerAttributes { Order = 98 }));
 
-        FoldItems = config.Bind(SortingSection, "Fold items", true,
+        FoldItems = config.Bind(SortingSection, "Fold items", false,
             new ConfigDescription(
                 "Fold items to save space.",
                 null,
                 new ConfigurationManagerAttributes { Order = 97 }));
 
-        MergeItems = config.Bind(SortingSection, "Merge items", true,
+        MergeItems = config.Bind(SortingSection, "Merge items", false,
             new ConfigDescription(
                 "Merge stacking items to save space.",
                 null,
                 new ConfigurationManagerAttributes { Order = 96 }));
 
-        RotateItems = config.Bind(SortingSection, "Rotate items", true,
+        RotateItems = config.Bind(SortingSection, "Rotate items", false,
             new ConfigDescription(
                 "Rotate items for best fit.",
                 null,
@@ -51,14 +51,14 @@ public static class Settings
                 null,
                 new ConfigurationManagerAttributes { Order = 94 }));
 
-        SkipRows = config.Bind(SortingSection, "Skip rows", 0,
+        SkipRows = config.Bind(SortingSection, "Skip rows", 12,
             new ConfigDescription(
                 "Skips the first # rows in stash.",
                 new AcceptableValueRange<int>(0, 14),
                 new ConfigurationManagerAttributes { Order = 93 }));
 
         // Sorting strategy
-        ItemType = config.Bind(SortingStrategySection, "Sort by item type", SortOptions.None,
+        ItemType = config.Bind(SortingStrategySection, "Sort by item type", SortOptions.Enabled,
             new ConfigDescription(
                 "Sort by item type",
                 null,

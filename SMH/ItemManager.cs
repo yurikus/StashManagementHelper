@@ -52,6 +52,12 @@ public static class ItemManager
     /// <param name="items">The table of items.</param>
     public static async Task MergeItems(CompoundItem items, InventoryController inventoryController, bool simulate)
     {
+        if (items == null)
+            throw new ArgumentNullException(nameof(items));
+
+        if (inventoryController == null)
+            throw new ArgumentNullException(nameof(inventoryController));
+
         try
         {
             foreach (var grid in items.Grids)
@@ -71,7 +77,7 @@ public static class ItemManager
                         if (stacks.Count <= 1)
                             break;
 
-                        var target = stacks.FirstOrDefault(s => s.StackObjectsCount < s.StackMaxSize);
+                        var target = stacks.FirstOrDefault(s => s.Owner != null && s.StackObjectsCount < s.StackMaxSize);
                         if (target == null)
                             break;
 
@@ -107,27 +113,26 @@ public static class ItemManager
     /// <returns>True if the item is in the player stash, false otherwise</returns>
     public static bool IsItemInStash(Item item)
     {
-        if (item == null)
+        if (item is null)
             return false;
 
-        if (item is StashItemClass)
+        if (item is StashItemClass
+            || string.Equals(item.TemplateId, StashTemplateId, StringComparison.Ordinal)
+            || string.Equals(item.Owner?.ID, StashItemId, StringComparison.Ordinal))
+        {
             return true;
-
-        if (item.TemplateId == StashTemplateId)
-            return true;
-
-        if (item.Owner?.ID == StashItemId)
-            return true;
+        }
 
         try
         {
-            foreach (var parentItem in item.GetAllParentItems())
+            foreach (var parent in item.GetAllParentItems())
             {
-                if (parentItem.TemplateId == StashTemplateId || parentItem is StashItemClass)
+                if (parent is StashItemClass
+                    || string.Equals(parent.TemplateId, StashTemplateId, StringComparison.Ordinal)
+                    || string.Equals(parent.Owner?.ID, StashItemId, StringComparison.Ordinal))
+                {
                     return true;
-
-                if (parentItem.Owner?.ID == StashItemId)
-                    return true;
+                }
             }
         }
         catch (Exception ex)

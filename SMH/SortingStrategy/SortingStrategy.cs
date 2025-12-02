@@ -62,7 +62,7 @@ public static class SortingStrategy
             ? orderedItems.OrderByDescending(GetItemType)
             : orderedItems.OrderBy(GetItemType);
 
-        return orderedItems.ToList();
+        return [.. orderedItems];
     }
 
     static object GetItemType(Item item)
