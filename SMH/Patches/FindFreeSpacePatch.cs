@@ -6,7 +6,7 @@ using EFT.InventoryLogic;
 using HarmonyLib;
 using SPT.Reflection.Patching;
 
-namespace StashManagementHelper;
+namespace SMH;
 
 public class FindFreeSpacePatch : ModulePatch
 {
@@ -105,7 +105,7 @@ public class FindFreeSpacePatch : ModulePatch
 
         LocationInGrid freeVert = null;
 
-        if (Settings.RotateItems.Value || freeHoriz == null)
+        if (freeHoriz == null)
             freeVert = FindOptimalItemPlacement(cellSize.Y, cellSize.X, ItemRotation.Vertical, skipRows);
 
         // If one orientation has no valid placement, use the other
@@ -171,20 +171,19 @@ public class FindFreeSpacePatch : ModulePatch
         bool invertDimensions = false)
     {
         // Determine starting and ending indices based on sorting direction
-        var flipDir = Settings.FlipSortDirection.Value;
-        var mainStartIndex = flipDir ? gridMainDimensionSize - itemMainDimensionSize - skipRows : skipRows;
-        var mainEndIndex = flipDir ? 0 : gridMainDimensionSize - itemMainDimensionSize;
-        var step = flipDir ? -1 : 1;
+        var mainStartIndex = skipRows;
+        var mainEndIndex = gridMainDimensionSize - itemMainDimensionSize;
+        var step = 1;
 
         // Iterate over possible positions in the grid to find a suitable location for the item
-        for (var mainIndex = mainStartIndex; flipDir ? mainIndex >= mainEndIndex : mainIndex <= mainEndIndex; mainIndex += step)
+        for (var mainIndex = mainStartIndex; mainIndex <= mainEndIndex; mainIndex += step)
         {
-            var secondaryStart = flipDir ? gridSecondaryDimensionSize - itemSecondaryDimensionSize : 0;
-            var secondaryEnd = flipDir ? 0 : gridSecondaryDimensionSize - itemSecondaryDimensionSize;
-            var secondaryStep = flipDir ? -1 : 1;
+            var secondaryStart = 0;
+            var secondaryEnd = gridSecondaryDimensionSize - itemSecondaryDimensionSize;
+            var secondaryStep = 1;
 
             for (var secondaryIndex = secondaryStart;
-                 flipDir ? secondaryIndex >= secondaryEnd : secondaryIndex <= secondaryEnd;
+                 secondaryIndex <= secondaryEnd;
                  secondaryIndex += secondaryStep)
             {
                 // Check if the current position has enough space for the item

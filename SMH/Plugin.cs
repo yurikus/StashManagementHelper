@@ -1,8 +1,8 @@
 ﻿using BepInEx;
 
-namespace StashManagementHelper;
+namespace SMH;
 
-[BepInPlugin("com.yurikus.smh", "yurikus - Stash Management Helper", BuildInfo.ModVersion)]
+[BepInPlugin("com.yurikus.smh", "yurikus - SMH", BuildInfo.ModVersion)]
 [BepInDependency("com.SPT.core", "4.0.0")]
 public class Plugin : BaseUnityPlugin
 {

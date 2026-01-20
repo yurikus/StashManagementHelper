@@ -6,7 +6,7 @@ using System.Reflection;
 using EFT.InventoryLogic;
 using Newtonsoft.Json;
 
-namespace StashManagementHelper;
+namespace SMH;
 
 public static class SortingStrategy
 {
@@ -55,14 +55,7 @@ public static class SortingStrategy
     public static List<Item> Sort(this IEnumerable<Item> items)
     {
         LoadSortOrder();
-
-        var orderedItems = items;
-
-        orderedItems = Settings.GetSortOption().HasFlag(SortOptions.Descending)
-            ? orderedItems.OrderByDescending(GetItemType)
-            : orderedItems.OrderBy(GetItemType);
-
-        return [.. orderedItems];
+        return [.. items.OrderBy(GetItemType)];
     }
 
     static object GetItemType(Item item)

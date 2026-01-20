@@ -4,7 +4,7 @@ using EFT.InventoryLogic;
 using HarmonyLib;
 using SPT.Reflection.Patching;
 
-namespace StashManagementHelper;
+namespace SMH;
 
 public class ItemListSortPatch : ModulePatch
 {

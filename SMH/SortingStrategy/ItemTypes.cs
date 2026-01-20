@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using EFT.InventoryLogic;
 
-namespace StashManagementHelper;
+namespace SMH;
 
 // TODO: Check TemplateIdToObjectMappingsClass
 

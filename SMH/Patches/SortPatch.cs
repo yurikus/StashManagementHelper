@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using SPT.Reflection.Patching;
 
-namespace StashManagementHelper;
+namespace SMH;
 
 public class SortPatch : ModulePatch
 {
@@ -18,26 +19,20 @@ public class SortPatch : ModulePatch
     {
         try
         {
-            if (!Settings.SortOtherContainers.Value && !ItemManager.IsItemInStash(sortedItem))
+            if (!ItemManager.IsItemInStash(sortedItem))
             {
                 ItemManager.Log.LogDebug($"Skipping custom sorting in {sortedItem.Template._name} - not in hideout stash container");
                 return;
             }
 
             Settings.Sorting = true;
-
-            // Merge separate stacks of the same item
-            if (Settings.MergeItems.Value)
-                await ItemManager.MergeItems(sortedItem, controller, simulate);
-
-            // Fold weapons to take up less space
-            if (Settings.FoldItems.Value)
-                await ItemManager.FoldItemsAsync(sortedItem, controller, simulate);
         }
         catch (Exception e)
         {
             ItemManager.Log.LogError(e.Message);
         }
+
+        await Task.CompletedTask;
     }
 
     [PatchPostfix]

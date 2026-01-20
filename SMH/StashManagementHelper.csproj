@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>$(EFTBuild).2.3</Version>
+    <Version>$(EFTBuild).3.0</Version>
     <TargetFramework>netstandard21</TargetFramework>
     <OutputType>Library</OutputType>
     <Deterministic>true</Deterministic>
